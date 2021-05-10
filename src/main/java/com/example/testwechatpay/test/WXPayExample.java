@@ -1,5 +1,6 @@
 package com.example.testwechatpay.test;
 
+import com.alibaba.fastjson.JSON;
 import com.example.testwechatpay.MyConfig;
 import com.github.wxpay.sdk.WXPay;
 
@@ -13,19 +14,18 @@ public class WXPayExample {
         WXPay wxpay = new WXPay(config);
 
         Map<String, String> data = new HashMap<>();
+
         data.put("body", "腾讯充值中心-QQ会员充值");
-        data.put("out_trade_no", "2016090910595900000012");
-        data.put("device_info", "");
-        data.put("fee_type", "CNY");
+        data.put("out_trade_no", System.currentTimeMillis() + "");
         data.put("total_fee", "1");
-        data.put("spbill_create_ip", "123.12.12.123");
         data.put("notify_url", "http://www.example.com/wxpay/notify");
-        data.put("trade_type", "NATIVE");
+        data.put("trade_type", "JSAPI");
         data.put("product_id", "12");
+        data.put("openid", "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI");
 
         try {
             Map<String, String> resp = wxpay.unifiedOrder(data);
-            System.out.println(resp);
+            System.out.println(JSON.toJSONString(resp));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -9,10 +9,10 @@ import java.io.InputStream;
 
 public class MyConfig implements WXPayConfig {
 
-    private byte[] certData;
+    private final byte[] certData;
 
     public MyConfig() throws Exception {
-        String certPath = "C:\\Users\\thedoflin\\Downloads\\WXCertUtil\\cert\\apiclient_cert.p12";
+        String certPath = "D:\\Programming\\SoftTopics\\2021.05.06微信支付\\证书\\apiclient_cert.pem";
         File file = new File(certPath);
         InputStream certStream = new FileInputStream(file);
         this.certData = new byte[(int) file.length()];
@@ -21,7 +21,7 @@ public class MyConfig implements WXPayConfig {
     }
 
     public String getAppID() {
-        return "wx8888888888888888";
+        return "wx2703e24708e3d2ca";
     }
 
     public String getMchID() {
@@ -29,7 +29,7 @@ public class MyConfig implements WXPayConfig {
     }
 
     public String getKey() {
-        return "88888888888888888888888888888888";
+        return null;
     }
 
     public InputStream getCertStream() {
