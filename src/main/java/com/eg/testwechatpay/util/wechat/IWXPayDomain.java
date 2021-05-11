@@ -1,4 +1,4 @@
-package com.example.testwechatpay.util.wechat;
+package com.eg.testwechatpay.util.wechat;
 
 /**
  * 域名管理，实现主备域名自动切换

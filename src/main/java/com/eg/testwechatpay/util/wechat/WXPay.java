@@ -1,4 +1,4 @@
-package com.example.testwechatpay.util.wechat;
+package com.eg.testwechatpay.util.wechat;
 
 import com.github.wxpay.sdk.WXPayConstants.SignType;
 

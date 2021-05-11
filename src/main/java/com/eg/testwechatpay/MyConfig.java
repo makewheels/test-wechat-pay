@@ -1,4 +1,4 @@
-package com.example.testwechatpay;
+package com.eg.testwechatpay;
 
 import com.github.wxpay.sdk.WXPayConfig;
 

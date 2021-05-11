@@ -1,4 +1,4 @@
-package com.example.testwechatpay;
+package com.eg.testwechatpay;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.example.testwechatpay.util.wechat;
+package com.eg.testwechatpay.util.wechat;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.http.HttpEntity;
@@ -18,7 +18,6 @@ import org.apache.http.util.EntityUtils;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * 交易保障

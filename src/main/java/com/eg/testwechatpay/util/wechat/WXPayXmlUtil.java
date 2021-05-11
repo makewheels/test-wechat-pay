@@ -1,4 +1,4 @@
-package com.example.testwechatpay.util.wechat;
+package com.eg.testwechatpay.util.wechat;
 
 import org.w3c.dom.Document;
 
