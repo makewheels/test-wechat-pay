@@ -3,10 +3,12 @@ package com.eg.testwechatpay;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eg.testwechatpay.bean.wechat.pay.jsapi.prepareid.Amount;
-import com.eg.testwechatpay.bean.wechat.pay.jsapi.prepareid.Payer;
-import com.eg.testwechatpay.bean.wechat.pay.jsapi.prepareid.PrepareIdRequest;
+import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Amount;
+import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Payer;
+import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.PrepareIdRequest;
 import com.eg.testwechatpay.util.UUIDUtil;
+import com.eg.testwechatpay.wechatpay.bean.jsapi.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,14 +17,13 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
 @Service
+@Slf4j
 public class WechatPayService {
     @Value("${wechat.pay.mchid}")
     private String mchid;
@@ -46,8 +47,8 @@ public class WechatPayService {
             String privateKey = content.replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
-            return KeyFactory.getInstance("RSA")
-                    .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey)));
+            return KeyFactory.getInstance("RSA").generatePrivate(
+                    new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey)));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -74,6 +75,7 @@ public class WechatPayService {
     }
 
     /**
+     * 第一步
      * JSAPI统一下单
      * {
      * "appid":"wx2703e24708e3d2ca",
@@ -97,7 +99,8 @@ public class WechatPayService {
      * "prepay_id": "wx26112221580621e9b071c00d9e093b0000"
      * }
      */
-    public String getJsapiPrepayId(String openid, String description, int amountTotal, String orderId) {
+    public String getJsapiPrepayId(
+            String openid, String description, int amountTotal, String orderId) {
         String url = "https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi";
         PrepareIdRequest request = new PrepareIdRequest();
         request.setAppid(appid);
@@ -121,6 +124,8 @@ public class WechatPayService {
                 + nonce_str + "\n"
                 + body + "\n";
 
+        log.info("创建预付订单: signText = {}", signText);
+
         String signature = sign(signText);
 
         //  mchid="1609202393",
@@ -141,8 +146,43 @@ public class WechatPayService {
                 .execute().body();
 
         JSONObject jsonObject = JSONObject.parseObject(json);
-        System.out.println(jsonObject);
+        log.info("创建预付订单，微信返回: {}", jsonObject);
         return jsonObject.getString("prepay_id");
+    }
+
+    /**
+     * 第二步，根据预付订单id，获取小程序发起支付请求，所需信息
+     * wx.requestPayment({
+     * timeStamp: '1620705237',
+     * nonceStr: '5K8264ILTKCH16CQ2502SI8ZNMTM67VS',
+     * package: 'prepay_id=wx11114818772442358df66b6e1322c60000',
+     * signType: 'RSA',
+     * paySign: 'XfX0cJ9+ko4LdcGP+Z==',
+     * success (res) { },
+     * fail (res) { }
+     * })
+     *
+     * @param prepay_id
+     * @return
+     */
+    public Response getMiniProgramResponse(String prepay_id) {
+        Response response = new Response();
+        long timeStamp = System.currentTimeMillis() / 1000;
+        String nonceStr = RandomStringUtils.randomAlphanumeric(16);
+        String packageStr = "prepay_id=" + prepay_id;
+        String signText = appid + "\n"
+                + timeStamp + "\n"
+                + nonceStr + "\n"
+                + packageStr + "\n";
+
+        String paySign = sign(signText);
+        response.setTimeStamp(timeStamp + "");
+        response.setNonceStr(nonceStr);
+        response.setPackageStr(packageStr);
+        response.setSignType("RSA");
+        response.setPaySign(paySign);
+        log.info("小程序支付所需提交信息: " + JSON.toJSONString(response));
+        return response;
     }
 
 }
