@@ -25,10 +25,9 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 
 public class WXPayRequest {
-    private WXPayConfig config;
+    private final WXPayConfig config;
 
-    public WXPayRequest(WXPayConfig config) throws Exception {
-
+    public WXPayRequest(WXPayConfig config) {
         this.config = config;
     }
 
@@ -110,10 +109,9 @@ public class WXPayRequest {
 
     }
 
-
     private String request(String urlSuffix, String uuid, String data, int connectTimeoutMs, int readTimeoutMs, boolean useCert, boolean autoReport) throws Exception {
-        Exception exception = null;
-        long elapsedTimeMillis = 0;
+        Exception exception;
+        long elapsedTimeMillis;
         long startTimestampMs = WXPayUtil.getCurrentTimestampMs();
         boolean firstHasDnsErr = false;
         boolean firstHasConnectTimeout = false;

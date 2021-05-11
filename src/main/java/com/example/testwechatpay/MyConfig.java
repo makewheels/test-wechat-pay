@@ -29,7 +29,7 @@ public class MyConfig implements WXPayConfig {
     }
 
     public String getKey() {
-        return null;
+        return "1609202393";
     }
 
     public InputStream getCertStream() {

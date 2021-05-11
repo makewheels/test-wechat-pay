@@ -7,12 +7,12 @@ import java.util.Map;
 
 public class WXPay {
 
-    private WXPayConfig config;
-    private SignType signType;
-    private boolean autoReport;
-    private boolean useSandbox;
-    private String notifyUrl;
-    private WXPayRequest wxPayRequest;
+    private final WXPayConfig config;
+    private final SignType signType;
+    private final boolean autoReport;
+    private final boolean useSandbox;
+    private final String notifyUrl;
+    private final WXPayRequest wxPayRequest;
 
     public WXPay(final WXPayConfig config) throws Exception {
         this(config, null, true, false);
@@ -150,8 +150,7 @@ public class WXPay {
         String msgUUID = reqData.get("nonce_str");
         String reqBody = WXPayUtil.mapToXml(reqData);
 
-        String resp = this.wxPayRequest.requestWithoutCert(urlSuffix, msgUUID, reqBody, connectTimeoutMs, readTimeoutMs, autoReport);
-        return resp;
+        return this.wxPayRequest.requestWithoutCert(urlSuffix, msgUUID, reqBody, connectTimeoutMs, readTimeoutMs, autoReport);
     }
 
 
@@ -288,9 +287,8 @@ public class WXPay {
                                     if (remainingTimeMs > 5 * 1000) {
                                         Thread.sleep(5 * 1000);
                                     } else {
-                                        Thread.sleep(1 * 1000);
+                                        Thread.sleep(1000);
                                     }
-                                    continue;
                                 }
                             } else {
                                 break;
