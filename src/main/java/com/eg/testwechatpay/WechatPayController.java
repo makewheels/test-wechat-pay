@@ -2,6 +2,7 @@ package com.eg.testwechatpay;
 
 import com.alibaba.fastjson.JSON;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -20,15 +21,16 @@ public class WechatPayController {
     }
 
     @RequestMapping("createOrder")
-    public String createOrder() {
+    public String createOrder(@RequestParam String openid) {
         String orderId = wechatPayService.getOrderId();
         String prepay_id = wechatPayService.getJsapiPrepayId(
-                "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI", "的大范围", 1, orderId);
+                openid, "的大范围", 1, orderId);
         return JSON.toJSONString(wechatPayService.getMiniProgramResponse(prepay_id));
     }
 
     @RequestMapping("callback")
     public String callback() {
-        return null;
+        System.out.println("WechatPayController.callback");
+        return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
 }

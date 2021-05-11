@@ -36,19 +36,23 @@ public class WechatPayService {
     @Value("${wechat.pay.privateKeyPath}")
     private String privateKeyPath;
 
+    private PrivateKey privateKey;
+
     public String getOrderId() {
         return UUIDUtil.getUUID();
     }
 
     private PrivateKey getPrivateKey() {
+        if (privateKey != null)
+            return privateKey;
         File file = new File(privateKeyPath);
         try {
             String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-            String privateKey = content.replace("-----BEGIN PRIVATE KEY-----", "")
+            String privateKeyString = content.replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
-            return KeyFactory.getInstance("RSA").generatePrivate(
-                    new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey)));
+            privateKey = KeyFactory.getInstance("RSA").generatePrivate(
+                    new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyString)));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -58,7 +62,7 @@ public class WechatPayService {
             e.printStackTrace();
             throw new RuntimeException("无效的密钥格式");
         }
-        return null;
+        return privateKey;
     }
 
     private String sign(String text) {
@@ -123,8 +127,6 @@ public class WechatPayService {
                 + timestamp + "\n"
                 + nonce_str + "\n"
                 + body + "\n";
-
-        log.info("创建预付订单: signText = {}", signText);
 
         String signature = sign(signText);
 
