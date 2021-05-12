@@ -259,7 +259,7 @@ public class WechatPayService {
      * https://api.mch.weixin.qq.com/v3/pay/transactions/id/1217752501201407033233368018
      */
     public String queryTransactionByWechatTransactionId(String transaction_id) {
-        String relativeUrl = "/v3/pay/transactions/id/" + transaction_id;
+        String relativeUrl = "/v3/pay/transactions/id/" + transaction_id + "?mchid=" + mchid;
         return getRequest(relativeUrl);
     }
 }
