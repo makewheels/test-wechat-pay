@@ -139,7 +139,7 @@ public class WechatPayService {
      */
     private String getRequest(String relativeUrl) {
         String authorizationHeader = getAuthorizationHeader("GET", relativeUrl, null);
-        return HttpRequest.get(relativeUrl)
+        return HttpRequest.get(wechatPayBaseUrl + relativeUrl)
                 .auth(authorizationHeader)
                 .execute().body();
     }
@@ -153,7 +153,7 @@ public class WechatPayService {
      */
     private String postRequest(String relativeUrl, String body) {
         String authorizationHeader = getAuthorizationHeader("POST", relativeUrl, body);
-        return HttpRequest.post(relativeUrl)
+        return HttpRequest.post(wechatPayBaseUrl + relativeUrl)
                 .auth(authorizationHeader)
                 .body(body)
                 .execute().body();
