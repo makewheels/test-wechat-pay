@@ -27,12 +27,16 @@ import java.util.Base64;
 public class WechatPayService {
     @Value("${wechat.pay.mchid}")
     private String mchid;
+
     @Value("${wechat.pay.serial_no}")
     private String serial_no;
-    @Value("${wechat.pay.appid}")
-    private String appid;
+
     @Value("${wechat.pay.notify_url}")
     private String notify_url;
+
+    @Value("${wechat.appid}")
+    private String appid;
+
     @Value("${wechat.pay.privateKeyPath}")
     private String privateKeyPath;
 
@@ -68,14 +72,46 @@ public class WechatPayService {
     private String sign(String text) {
         PrivateKey privateKey = getPrivateKey();
         try {
-            Signature sign = Signature.getInstance("SHA256withRSA");
-            sign.initSign(privateKey);
-            sign.update(text.getBytes());
-            return Base64.getEncoder().encodeToString(sign.sign());
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(privateKey);
+            signature.update(text.getBytes());
+            return Base64.getEncoder().encodeToString(signature.sign());
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 获取签名头
+     *
+     * @param method GET, POST
+     * @param url    相对地址，例如 /v3/pay/transactions/jsapi
+     * @param body
+     * @return
+     */
+    private String getAuthorizationHeader(String method, String url, String body) {
+        long timestamp = System.currentTimeMillis() / 1000;
+        String nonce_str = RandomStringUtils.randomAlphanumeric(16);
+        String signText = method + "\n"
+                + url + "\n"
+                + timestamp + "\n"
+                + nonce_str + "\n"
+                + body + "\n";
+
+        String signature = sign(signText);
+
+        //  mchid="1609202393",
+        //  serial_no="2358F61A1A50BE22DC036A2FF06D437777AA5DE6",
+        //  nonce_str="5EBBA407F99B95194B944F9A7ED0F726",
+        //  timestamp="1620700133",
+        //  signature="PACZ0q68Fw=="
+        return "WECHATPAY2-SHA256-RSA2048 "
+                + "mchid=\"" + mchid + "\","
+                + "serial_no=\"" + serial_no + "\","
+                + "timestamp=\"" + timestamp + "\","
+                + "nonce_str=\"" + nonce_str + "\","
+                + "signature=\"" + signature + "\"";
     }
 
     /**
@@ -120,30 +156,11 @@ public class WechatPayService {
         request.setPayer(payer);
         String body = JSON.toJSONString(request);
 
-        long timestamp = System.currentTimeMillis() / 1000;
-        String nonce_str = RandomStringUtils.randomAlphanumeric(16);
-        String signText = "POST\n"
-                + "/v3/pay/transactions/jsapi\n"
-                + timestamp + "\n"
-                + nonce_str + "\n"
-                + body + "\n";
-
-        String signature = sign(signText);
-
-        //  mchid="1609202393",
-        //  serial_no="2358F61A1A50BE22DC036A2FF06D437777AA5DE6",
-        //  nonce_str="5EBBA407F99B95194B944F9A7ED0F726",
-        //  timestamp="1620700133",
-        //  signature="PACZ0q68Fw=="
-        String authorization = "WECHATPAY2-SHA256-RSA2048 "
-                + "mchid=\"" + mchid + "\","
-                + "serial_no=\"" + serial_no + "\","
-                + "timestamp=\"" + timestamp + "\","
-                + "nonce_str=\"" + nonce_str + "\","
-                + "signature=\"" + signature + "\"";
+        String authorizationHeader = getAuthorizationHeader(
+                "POST", "/v3/pay/transactions/jsapi", body);
 
         String json = HttpRequest.post(url)
-                .auth(authorization)
+                .auth(authorizationHeader)
                 .body(body)
                 .execute().body();
 
