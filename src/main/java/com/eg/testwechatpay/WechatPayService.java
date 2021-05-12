@@ -3,10 +3,10 @@ package com.eg.testwechatpay;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.util.UUIDUtil;
 import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Amount;
 import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Payer;
 import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.PrepareIdRequest;
-import com.eg.testwechatpay.util.UUIDUtil;
 import com.eg.testwechatpay.wechatpay.bean.jsapi.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -46,13 +46,21 @@ public class WechatPayService {
         return UUIDUtil.getUUID();
     }
 
+    public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
+
+    /**
+     * 读取本地私钥
+     *
+     * @return
+     */
     private PrivateKey getPrivateKey() {
         if (privateKey != null)
             return privateKey;
         File file = new File(privateKeyPath);
         try {
             String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-            String privateKeyString = content.replace("-----BEGIN PRIVATE KEY-----", "")
+            String privateKeyString = content
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
             privateKey = KeyFactory.getInstance("RSA").generatePrivate(
@@ -69,6 +77,12 @@ public class WechatPayService {
         return privateKey;
     }
 
+    /**
+     * 签名
+     *
+     * @param text
+     * @return
+     */
     private String sign(String text) {
         PrivateKey privateKey = getPrivateKey();
         try {
@@ -93,6 +107,9 @@ public class WechatPayService {
     private String getAuthorizationHeader(String method, String url, String body) {
         long timestamp = System.currentTimeMillis() / 1000;
         String nonce_str = RandomStringUtils.randomAlphanumeric(16);
+
+        if (body == null)
+            body = "";
         String signText = method + "\n"
                 + url + "\n"
                 + timestamp + "\n"
@@ -112,6 +129,34 @@ public class WechatPayService {
                 + "timestamp=\"" + timestamp + "\","
                 + "nonce_str=\"" + nonce_str + "\","
                 + "signature=\"" + signature + "\"";
+    }
+
+    /**
+     * 发送GET请求
+     *
+     * @param relativeUrl
+     * @return
+     */
+    private String getRequest(String relativeUrl) {
+        String authorizationHeader = getAuthorizationHeader("GET", relativeUrl, null);
+        return HttpRequest.post(relativeUrl)
+                .auth(authorizationHeader)
+                .execute().body();
+    }
+
+    /**
+     * 发送POST请求
+     *
+     * @param relativeUrl
+     * @param body
+     * @return
+     */
+    private String postRequest(String relativeUrl, String body) {
+        String authorizationHeader = getAuthorizationHeader("POST", relativeUrl, body);
+        return HttpRequest.post(relativeUrl)
+                .auth(authorizationHeader)
+                .body(body)
+                .execute().body();
     }
 
     /**
@@ -141,7 +186,7 @@ public class WechatPayService {
      */
     public String getJsapiPrepayId(
             String openid, String description, int amountTotal, String orderId) {
-        String url = "https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi";
+        String url = wechatPayBaseUrl + "/v3/pay/transactions/jsapi";
         PrepareIdRequest request = new PrepareIdRequest();
         request.setAppid(appid);
         request.setMchid(mchid);
@@ -154,15 +199,8 @@ public class WechatPayService {
         Payer payer = new Payer();
         payer.setOpenid(openid);
         request.setPayer(payer);
-        String body = JSON.toJSONString(request);
 
-        String authorizationHeader = getAuthorizationHeader(
-                "POST", "/v3/pay/transactions/jsapi", body);
-
-        String json = HttpRequest.post(url)
-                .auth(authorizationHeader)
-                .body(body)
-                .execute().body();
+        String json = postRequest("/v3/pay/transactions/jsapi", JSON.toJSONString(request));
 
         JSONObject jsonObject = JSONObject.parseObject(json);
         log.info("创建预付订单，微信返回: {}", jsonObject);
@@ -204,4 +242,25 @@ public class WechatPayService {
         return response;
     }
 
+    /**
+     * 根据商户订单号查询订单
+     * <p>
+     * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
+     * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
+     */
+    public String queryTransactionByOutTradeNo(String outTradeNo) {
+        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + outTradeNo + "?mchid=" + mchid;
+        return getRequest(relativeUrl);
+    }
+
+    /**
+     * 根据微信订单号查询订单
+     * <p>
+     * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
+     * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
+     */
+    public String queryTransactionByWechatTransactionId(String transaction_id) {
+        String relativeUrl = "/v3/pay/transactions/id/" + transaction_id;
+        return getRequest(relativeUrl);
+    }
 }
