@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RGB {
-    private int r;
-    private int g;
-    private int b;
+    private Integer r;
+    private Integer g;
+    private Integer b;
 }

@@ -1,13 +1,13 @@
 package com.eg.testwechatpay.controller;
 
 import com.eg.testwechatpay.service.MiniProgramService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
 @RestController
+@RequestMapping("miniProgram")
 public class MiniProgramController {
     @Resource
     private MiniProgramService miniProgramService;

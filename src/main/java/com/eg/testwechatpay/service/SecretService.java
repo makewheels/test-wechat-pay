@@ -7,12 +7,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccessTokenService {
+public class SecretService {
     @Value("${wechat.appid}")
     private String appid;
 
     private long expireTime;
     private String accessToken;
+
+    public String getAppSecret() {
+//        return System.getenv("wechat.secret");
+        return " ";
+    }
 
     public String getAccessToken() {
         //如果没有，重新获取
@@ -25,10 +30,9 @@ public class AccessTokenService {
     }
 
     private void requestAccessToken() {
-        String secret = System.getenv("wechat.secret");
         String json = HttpUtil.get("https://api.weixin.qq.com/cgi-bin/token?"
                 + "grant_type=client_credential&appid=" + appid
-                + "&secret=" + secret);
+                + "&secret=" + getAppSecret());
         JSONObject jsonObject = JSON.parseObject(json);
         //稍微提前一些过期，防止出现错误
         expireTime = System.currentTimeMillis() + jsonObject.getIntValue("expires_in") * 1000L - 10000;

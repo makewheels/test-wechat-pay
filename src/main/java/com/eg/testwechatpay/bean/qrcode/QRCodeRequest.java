@@ -6,9 +6,9 @@ import lombok.Data;
 public class QRCodeRequest {
     private String scene;
     private String page;
-    private int width;
-    private boolean auto_color;
+    private Integer width;
+    private Boolean auto_color;
     private RGB line_color;
-    private boolean is_hyaline;
+    private Boolean is_hyaline;
 
 }

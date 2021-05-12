@@ -4,10 +4,10 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.payresponse.MiniProgramResponse;
 import com.eg.testwechatpay.bean.prepayid.Amount;
 import com.eg.testwechatpay.bean.prepayid.Payer;
 import com.eg.testwechatpay.bean.prepayid.PrepareIdRequest;
-import com.eg.testwechatpay.bean.payresponse.MiniProgramResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -42,8 +43,18 @@ public class WechatPayService {
 
     private PrivateKey privateKey;
 
+    public static void main(String[] args) {
+        String s = IdUtil.simpleUUID();
+        System.out.println(s);
+        String s1 = new BigInteger(s, 16).toString(36);
+        System.out.println(s1);
+        System.out.println(s1.length());
+        System.out.println(Base64.getEncoder().encodeToString(s1.getBytes()));
+    }
+
     public String getOrderId() {
-        return IdUtil.simpleUUID();
+        String uuid = IdUtil.simpleUUID();
+        return new BigInteger(uuid, 16).toString(36);
     }
 
     public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
