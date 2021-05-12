@@ -285,7 +285,8 @@ public class WechatPayService {
      * }
      */
     public String queryTransactionByOutTradeNo(String out_trade_no) {
-        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + out_trade_no + "?mchid=" + mchid;
+        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + out_trade_no
+                + "?mchid=" + mchid;
         return getRequest(relativeUrl);
     }
 

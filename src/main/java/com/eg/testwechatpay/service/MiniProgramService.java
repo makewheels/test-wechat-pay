@@ -6,6 +6,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.eg.testwechatpay.bean.qrcode.QRCodeRequest;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +26,12 @@ public class MiniProgramService {
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
                 + secretService.getAccessToken();
         QRCodeRequest request = new QRCodeRequest();
-        request.setScene("v=1&cmd=pay&id=16185322516");
+        request.setScene("v=fea3285322516");
         HttpResponse response = HttpRequest.post(url)
                 .body(JSON.toJSONString(request))
                 .execute();
-        File file = new File("C:\\Users\\binqiao\\Downloads\\" + System.currentTimeMillis() + ".jpg");
+        File file = new File(SystemUtils.getUserHome(),
+                "Downloads/" + System.currentTimeMillis() + ".jpg");
         try {
             FileUtils.writeByteArrayToFile(file, response.bodyBytes());
         } catch (IOException e) {

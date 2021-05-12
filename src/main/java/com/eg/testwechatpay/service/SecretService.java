@@ -15,8 +15,7 @@ public class SecretService {
     private String accessToken;
 
     public String getAppSecret() {
-//        return System.getenv("wechat.secret");
-        return " ";
+        return System.getenv("wechat.secret");
     }
 
     public String getAccessToken() {
@@ -35,7 +34,8 @@ public class SecretService {
                 + "&secret=" + getAppSecret());
         JSONObject jsonObject = JSON.parseObject(json);
         //稍微提前一些过期，防止出现错误
-        expireTime = System.currentTimeMillis() + jsonObject.getIntValue("expires_in") * 1000L - 10000;
+        expireTime = System.currentTimeMillis()
+                + jsonObject.getIntValue("expires_in") * 1000L - 10000;
         accessToken = jsonObject.getString("access_token");
     }
 }
