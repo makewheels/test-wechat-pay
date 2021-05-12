@@ -248,8 +248,8 @@ public class WechatPayService {
      * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
      * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
      */
-    public String queryTransactionByOutTradeNo(String outTradeNo) {
-        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + outTradeNo + "?mchid=" + mchid;
+    public String queryTransactionByOutTradeNo(String out_trade_no) {
+        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + out_trade_no + "?mchid=" + mchid;
         return getRequest(relativeUrl);
     }
 

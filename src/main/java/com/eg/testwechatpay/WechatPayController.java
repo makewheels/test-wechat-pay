@@ -33,4 +33,14 @@ public class WechatPayController {
         System.out.println("WechatPayController.callback");
         return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
+
+    @RequestMapping("queryTransactionByOutTradeNo")
+    public String queryTransactionByOutTradeNo(@RequestParam String out_trade_no) {
+        return wechatPayService.queryTransactionByOutTradeNo(out_trade_no);
+    }
+
+    @RequestMapping("queryTransactionByWechatTransactionId")
+    public String queryTransactionByWechatTransactionId(@RequestParam String transaction_id) {
+        return wechatPayService.queryTransactionByWechatTransactionId(transaction_id);
+    }
 }
