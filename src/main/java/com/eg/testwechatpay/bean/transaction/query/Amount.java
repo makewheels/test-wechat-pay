@@ -1,7 +1,7 @@
 /**
   * Copyright 2021 json.cn 
   */
-package com.eg.testwechatpay.wechatpay.bean.jsapi.transaction.query;
+package com.eg.testwechatpay.bean.transaction.query;
 
 /**
  * Auto-generated: 2021-05-12 14:4:23

@@ -1,6 +1,8 @@
-package com.eg.testwechatpay;
+package com.eg.testwechatpay.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.eg.testwechatpay.bean.transaction.query.TransactionResult;
+import com.eg.testwechatpay.service.WechatPayService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -39,6 +41,9 @@ public class WechatPayController {
 
     @RequestMapping("queryTransactionByWechatTransactionId")
     public String queryTransactionByWechatTransactionId(@RequestParam String transaction_id) {
-        return wechatPayService.queryTransactionByWechatTransactionId(transaction_id);
+        String json = wechatPayService.queryTransactionByWechatTransactionId(transaction_id);
+        TransactionResult transactionResult = JSON.parseObject(json, TransactionResult.class);
+        System.out.println("transactionResult.getTrade_state() = " + transactionResult.getTrade_state());
+        return transactionResult.getTransaction_id();
     }
 }

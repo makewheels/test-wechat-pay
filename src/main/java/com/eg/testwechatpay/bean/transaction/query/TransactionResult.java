@@ -1,7 +1,7 @@
 /**
   * Copyright 2021 json.cn 
   */
-package com.eg.testwechatpay.wechatpay.bean.jsapi.transaction.query;
+package com.eg.testwechatpay.bean.transaction.query;
 import java.util.List;
 import java.util.Date;
 
@@ -11,7 +11,7 @@ import java.util.Date;
  * @author json.cn (i@json.cn)
  * @website http://www.json.cn/java2pojo/
  */
-public class Result {
+public class TransactionResult {
 
     private Amount amount;
     private String appid;

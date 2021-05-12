@@ -1,13 +1,13 @@
-package com.eg.testwechatpay;
+package com.eg.testwechatpay.service;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eg.testwechatpay.util.UUIDUtil;
-import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Amount;
-import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.Payer;
-import com.eg.testwechatpay.wechatpay.bean.jsapi.prepareid.PrepareIdRequest;
-import com.eg.testwechatpay.wechatpay.bean.jsapi.response.Response;
+import com.eg.testwechatpay.bean.prepayid.Amount;
+import com.eg.testwechatpay.bean.prepayid.Payer;
+import com.eg.testwechatpay.bean.prepayid.PrepareIdRequest;
+import com.eg.testwechatpay.bean.payresponse.MiniProgramResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,7 +43,7 @@ public class WechatPayService {
     private PrivateKey privateKey;
 
     public String getOrderId() {
-        return UUIDUtil.getUUID();
+        return IdUtil.simpleUUID();
     }
 
     public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
@@ -192,10 +192,12 @@ public class WechatPayService {
         request.setDescription(description);
         request.setOut_trade_no(orderId);
         request.setNotify_url(notify_url);
-        Amount amount = new Amount();
+        Amount amount
+                = new Amount();
         amount.setTotal(amountTotal);
         request.setAmount(amount);
-        Payer payer = new Payer();
+        Payer payer
+                = new Payer();
         payer.setOpenid(openid);
         request.setPayer(payer);
 
@@ -222,7 +224,7 @@ public class WechatPayService {
      * @param prepay_id
      * @return
      */
-    public Response getMiniProgramResponse(String prepay_id) {
+    public MiniProgramResponse getMiniProgramResponse(String prepay_id) {
         long timeStamp = System.currentTimeMillis() / 1000;
         String nonceStr = RandomStringUtils.randomAlphanumeric(16);
         String packageStr = "prepay_id=" + prepay_id;
@@ -232,14 +234,14 @@ public class WechatPayService {
                 + packageStr + "\n";
         String paySign = sign(signText);
 
-        Response response = new Response();
-        response.setTimeStamp(timeStamp + "");
-        response.setNonceStr(nonceStr);
-        response.setPackageStr(packageStr);
-        response.setSignType("RSA");
-        response.setPaySign(paySign);
-        log.info("小程序支付所需提交信息: " + JSON.toJSONString(response));
-        return response;
+        MiniProgramResponse miniProgramResponse = new MiniProgramResponse();
+        miniProgramResponse.setTimeStamp(timeStamp + "");
+        miniProgramResponse.setNonceStr(nonceStr);
+        miniProgramResponse.setPackageStr(packageStr);
+        miniProgramResponse.setSignType("RSA");
+        miniProgramResponse.setPaySign(paySign);
+        log.info("小程序支付所需提交信息: " + JSON.toJSONString(miniProgramResponse));
+        return miniProgramResponse;
     }
 
     /**
@@ -247,28 +249,28 @@ public class WechatPayService {
      * <p>
      * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
      * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
-     * @return
-     * {
-     *     "amount": {
-     *         "currency": "CNY",
-     *         "payer_currency": "CNY",
-     *         "payer_total": 1,
-     *         "total": 1
-     *     },
-     *     "appid": "wx2703e24708e3d2ca",
-     *     "attach": "",
-     *     "bank_type": "OTHERS",
-     *     "mchid": "1609202393",
-     *     "out_trade_no": "43138c3f00e947e7b10bfaa7bb854b35",
-     *     "payer": {
-     *         "openid": "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI"
-     *     },
-     *     "promotion_detail": [],
-     *     "success_time": "2021-05-12T00:19:52+08:00",
-     *     "trade_state": "SUCCESS",
-     *     "trade_state_desc": "支付成功",
-     *     "trade_type": "JSAPI",
-     *     "transaction_id": "4200001025202105128641360838"
+     *
+     * @return {
+     * "amount": {
+     * "currency": "CNY",
+     * "payer_currency": "CNY",
+     * "payer_total": 1,
+     * "total": 1
+     * },
+     * "appid": "wx2703e24708e3d2ca",
+     * "attach": "",
+     * "bank_type": "OTHERS",
+     * "mchid": "1609202393",
+     * "out_trade_no": "43138c3f00e947e7b10bfaa7bb854b35",
+     * "payer": {
+     * "openid": "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI"
+     * },
+     * "promotion_detail": [],
+     * "success_time": "2021-05-12T00:19:52+08:00",
+     * "trade_state": "SUCCESS",
+     * "trade_state_desc": "支付成功",
+     * "trade_type": "JSAPI",
+     * "transaction_id": "4200001025202105128641360838"
      * }
      */
     public String queryTransactionByOutTradeNo(String out_trade_no) {
