@@ -139,7 +139,7 @@ public class WechatPayService {
      */
     private String getRequest(String relativeUrl) {
         String authorizationHeader = getAuthorizationHeader("GET", relativeUrl, null);
-        return HttpRequest.post(relativeUrl)
+        return HttpRequest.get(relativeUrl)
                 .auth(authorizationHeader)
                 .execute().body();
     }
@@ -186,7 +186,6 @@ public class WechatPayService {
      */
     public String getJsapiPrepayId(
             String openid, String description, int amountTotal, String orderId) {
-        String url = wechatPayBaseUrl + "/v3/pay/transactions/jsapi";
         PrepareIdRequest request = new PrepareIdRequest();
         request.setAppid(appid);
         request.setMchid(mchid);
@@ -200,7 +199,8 @@ public class WechatPayService {
         payer.setOpenid(openid);
         request.setPayer(payer);
 
-        String json = postRequest("/v3/pay/transactions/jsapi", JSON.toJSONString(request));
+        String body = JSON.toJSONString(request);
+        String json = postRequest("/v3/pay/transactions/jsapi", body);
 
         JSONObject jsonObject = JSONObject.parseObject(json);
         log.info("创建预付订单，微信返回: {}", jsonObject);
@@ -223,7 +223,6 @@ public class WechatPayService {
      * @return
      */
     public Response getMiniProgramResponse(String prepay_id) {
-        Response response = new Response();
         long timeStamp = System.currentTimeMillis() / 1000;
         String nonceStr = RandomStringUtils.randomAlphanumeric(16);
         String packageStr = "prepay_id=" + prepay_id;
@@ -231,8 +230,9 @@ public class WechatPayService {
                 + timeStamp + "\n"
                 + nonceStr + "\n"
                 + packageStr + "\n";
-
         String paySign = sign(signText);
+
+        Response response = new Response();
         response.setTimeStamp(timeStamp + "");
         response.setNonceStr(nonceStr);
         response.setPackageStr(packageStr);
@@ -243,7 +243,7 @@ public class WechatPayService {
     }
 
     /**
-     * 根据商户订单号查询订单
+     * 查询订单: 根据商户订单号
      * <p>
      * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
      * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
@@ -254,10 +254,9 @@ public class WechatPayService {
     }
 
     /**
-     * 根据微信订单号查询订单
+     * 查询订单: 根据微信订单号
      * <p>
-     * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
-     * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
+     * https://api.mch.weixin.qq.com/v3/pay/transactions/id/1217752501201407033233368018
      */
     public String queryTransactionByWechatTransactionId(String transaction_id) {
         String relativeUrl = "/v3/pay/transactions/id/" + transaction_id;
