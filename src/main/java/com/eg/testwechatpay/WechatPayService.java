@@ -247,6 +247,29 @@ public class WechatPayService {
      * <p>
      * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
      * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
+     * @return
+     * {
+     *     "amount": {
+     *         "currency": "CNY",
+     *         "payer_currency": "CNY",
+     *         "payer_total": 1,
+     *         "total": 1
+     *     },
+     *     "appid": "wx2703e24708e3d2ca",
+     *     "attach": "",
+     *     "bank_type": "OTHERS",
+     *     "mchid": "1609202393",
+     *     "out_trade_no": "43138c3f00e947e7b10bfaa7bb854b35",
+     *     "payer": {
+     *         "openid": "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI"
+     *     },
+     *     "promotion_detail": [],
+     *     "success_time": "2021-05-12T00:19:52+08:00",
+     *     "trade_state": "SUCCESS",
+     *     "trade_state_desc": "支付成功",
+     *     "trade_type": "JSAPI",
+     *     "transaction_id": "4200001025202105128641360838"
+     * }
      */
     public String queryTransactionByOutTradeNo(String out_trade_no) {
         String relativeUrl = "/v3/pay/transactions/out-trade-no/" + out_trade_no + "?mchid=" + mchid;
