@@ -19,6 +19,6 @@ public class QRCode {
     private Boolean isEnable;
     private Date createTime;
 
-    private OssFile ossFile;
+    private String ossFileId;
 
 }

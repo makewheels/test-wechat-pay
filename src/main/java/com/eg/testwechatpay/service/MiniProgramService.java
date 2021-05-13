@@ -1,6 +1,5 @@
 package com.eg.testwechatpay.service;
 
-import ch.qos.logback.core.util.TimeUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.SecureUtil;
@@ -11,11 +10,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.eg.testwechatpay.bean.OssFile;
 import com.eg.testwechatpay.bean.QRCode;
+import com.eg.testwechatpay.repository.OssFileRepository;
 import com.eg.testwechatpay.repository.QRCodeRepository;
 import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
 import com.eg.testwechatpay.wechat.qrcode.QRCodeRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +40,8 @@ public class MiniProgramService {
 
     @Resource
     private QRCodeRepository qrCodeRepository;
+    @Resource
+    private OssFileRepository ossFileRepository;
 
     @Resource
     private OssService ossService;
@@ -61,7 +61,6 @@ public class MiniProgramService {
         List<QRCode> qrCodes = new ArrayList<>(amount);
         for (int i = 0; i < amount; i++) {
             QRCode qrCode = createQRCode(queryScene);
-            qrCodeRepository.save(qrCode);
             qrCodes.add(qrCode);
         }
         return qrCodes;
@@ -83,6 +82,7 @@ public class MiniProgramService {
             folder.mkdirs();
         File imageFile = new File(folder,
                 System.currentTimeMillis() + "-" + queryScene + ".jpg");
+        log.info("生成小程序码，下载文件");
         //下载文件
         try {
             FileUtils.writeByteArrayToFile(imageFile, response.bodyBytes());
@@ -90,22 +90,29 @@ public class MiniProgramService {
             e.printStackTrace();
         }
         //上传对象存储
-        String key = "qrcodes/" + queryScene + ".jpg";
-        String url = ossService.upload(imageFile, key);
+        String object = "qrcodes/" + queryScene + ".jpg";
+        log.info("上传对象存储 object = {}", object);
+        String url = ossService.upload(imageFile, object);
         OssFile ossFile = new OssFile();
         ossFile.setBucket(ossService.getBucket());
-        ossFile.setKey(key);
+        ossFile.setObject(object);
         ossFile.setUrl(url);
         ossFile.setSize(imageFile.length());
         ossFile.setMd5(SecureUtil.md5(imageFile));
         ossFile.setCreateTime(new Date());
+        ossFileRepository.save(ossFile);
+        log.info("保存ossFile: {}", JSON.toJSONString(ossFile));
         //删除本地文件
         imageFile.delete();
+        log.info("删除本地文件: {}", imageFile.getPath());
         //返回对象
         QRCode qrCode = new QRCode();
         qrCode.setCreateTime(new Date());
         qrCode.setQueryScene(queryScene);
         qrCode.setIsEnable(false);
+        qrCode.setOssFileId(ossFile.get_id());
+        qrCodeRepository.save(qrCode);
+        log.info("保存qrCode: {}", JSON.toJSONString(qrCode));
         return qrCode;
     }
 

@@ -13,7 +13,7 @@ public class OssFile {
     private String _id;
 
     private String bucket;
-    private String key;
+    private String object;
     private String url;
     private Long size;
     private String md5;

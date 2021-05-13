@@ -1,5 +1,6 @@
 package com.eg.testwechatpay.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.internal.OSSHeaders;
@@ -7,12 +8,13 @@ import com.aliyun.oss.model.*;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.Date;
 
 @Service
 public class OssService {
     private final String endpoint = "https://oss-cn-beijing.aliyuncs.com";
     private final String accessKeyId = "LTAI5t6n9vK3GSeMBrBpX8Uh";
-    private final String accessKeySecret = "";
+    private final String accessKeySecret = " ";
     private final String bucket = "test-wechat-pay";
 
     private final String baseUrl = "https://test-wechat-pay.oss-cn-beijing.aliyuncs.com";
@@ -30,9 +32,41 @@ public class OssService {
         return ossClient;
     }
 
-    public String upload(File file, String objectName) {
-        PutObjectRequest request = new PutObjectRequest(bucket, objectName, file);
+    /**
+     * 上传文件
+     *
+     * @param file
+     * @param object
+     * @return
+     */
+    public String upload(File file, String object) {
+        PutObjectRequest request = new PutObjectRequest(bucket, object, file);
         getOssClient().putObject(request);
-        return baseUrl + "/" + objectName;
+        return baseUrl + "/" + object;
+    }
+
+    /**
+     * 生成预签名url，默认有效期20分钟
+     *
+     * @param bucket
+     * @param object
+     * @return
+     */
+    public String generatePreSignedUrl(String bucket, String object) {
+        Date expiration = new Date(new Date().getTime() + 20 * 60 * 1000);
+        return getOssClient().generatePresignedUrl(bucket, object, expiration).toString();
+    }
+
+    /**
+     * 生成预签名url
+     *
+     * @param bucket
+     * @param object
+     * @param time
+     * @return
+     */
+    public String generatePreSignedUrl(String bucket, String object, long time) {
+        Date expiration = new Date(new Date().getTime() + time);
+        return getOssClient().generatePresignedUrl(bucket, object, expiration).toString();
     }
 }
