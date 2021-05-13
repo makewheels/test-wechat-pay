@@ -21,5 +21,4 @@ public class QRCode {
 
     private OssFile ossFile;
 
-    private File localFile;
 }

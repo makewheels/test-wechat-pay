@@ -13,11 +13,15 @@ public class OssService {
     private final String endpoint = "https://oss-cn-beijing.aliyuncs.com";
     private final String accessKeyId = "LTAI5t6n9vK3GSeMBrBpX8Uh";
     private final String accessKeySecret = "";
-    private final String bucketName = "test-wechat-pay";
+    private final String bucket = "test-wechat-pay";
 
     private final String baseUrl = "https://test-wechat-pay.oss-cn-beijing.aliyuncs.com";
 
     private OSS ossClient;
+
+    public String getBucket() {
+        return bucket;
+    }
 
     private OSS getOssClient() {
         if (ossClient == null) {
@@ -27,7 +31,7 @@ public class OssService {
     }
 
     public String upload(File file, String objectName) {
-        PutObjectRequest request = new PutObjectRequest(bucketName, objectName, file);
+        PutObjectRequest request = new PutObjectRequest(bucket, objectName, file);
         getOssClient().putObject(request);
         return baseUrl + "/" + objectName;
     }

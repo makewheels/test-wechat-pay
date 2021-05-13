@@ -1,25 +1,29 @@
 package com.eg.testwechatpay.service;
 
-import cn.hutool.core.util.IdUtil;
+import ch.qos.logback.core.util.TimeUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.SecureUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.OssFile;
 import com.eg.testwechatpay.bean.QRCode;
 import com.eg.testwechatpay.repository.QRCodeRepository;
 import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
 import com.eg.testwechatpay.wechat.qrcode.QRCodeRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +42,9 @@ public class MiniProgramService {
 
     @Resource
     private QRCodeRepository qrCodeRepository;
+
+    @Resource
+    private OssService ossService;
 
     private String getQueryScene() {
         String queryScene;
@@ -64,28 +71,41 @@ public class MiniProgramService {
      * 生成小程序码
      */
     public QRCode createQRCode(String queryScene) {
-        String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
+        String getwxacodeunlimitUrl = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
                 + secretService.getAccessToken();
         QRCodeRequest request = new QRCodeRequest();
         request.setScene(queryScene);
-        HttpResponse response = HttpRequest.post(url)
+        HttpResponse response = HttpRequest.post(getwxacodeunlimitUrl)
                 .body(JSON.toJSONString(request))
                 .execute();
         File folder = new File(SystemUtils.getUserHome() + "/Downloads/qrcode/");
         if (!folder.exists())
             folder.mkdirs();
         File imageFile = new File(folder,
-                System.currentTimeMillis() + "-" + IdUtil.simpleUUID() + ".jpg");
+                System.currentTimeMillis() + "-" + queryScene + ".jpg");
+        //下载文件
         try {
             FileUtils.writeByteArrayToFile(imageFile, response.bodyBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //上传对象存储
+        String key = "qrcodes/" + queryScene + ".jpg";
+        String url = ossService.upload(imageFile, key);
+        OssFile ossFile = new OssFile();
+        ossFile.setBucket(ossService.getBucket());
+        ossFile.setKey(key);
+        ossFile.setUrl(url);
+        ossFile.setSize(imageFile.length());
+        ossFile.setMd5(SecureUtil.md5(imageFile));
+        ossFile.setCreateTime(new Date());
+        //删除本地文件
+        imageFile.delete();
+        //返回对象
         QRCode qrCode = new QRCode();
         qrCode.setCreateTime(new Date());
         qrCode.setQueryScene(queryScene);
         qrCode.setIsEnable(false);
-        qrCode.setLocalFile(imageFile);
         return qrCode;
     }
 
