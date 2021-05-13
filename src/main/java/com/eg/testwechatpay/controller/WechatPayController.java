@@ -16,6 +16,11 @@ public class WechatPayController {
     @Resource
     private WechatPayService wechatPayService;
 
+    /**
+     * 测试接口不开放
+     *
+     * @return
+     */
     @RequestMapping("getJsapiPrepayId")
     public String getJsapiPrepayId() {
         String orderId = wechatPayService.getOrderId();
@@ -49,11 +54,23 @@ public class WechatPayController {
         return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
 
+    /**
+     * 测试接口不开放
+     *
+     * @param out_trade_no
+     * @return
+     */
     @RequestMapping("queryTransactionByOutTradeNo")
     public String queryTransactionByOutTradeNo(@RequestParam String out_trade_no) {
         return wechatPayService.queryTransactionByOutTradeNo(out_trade_no);
     }
 
+    /**
+     * 测试接口不开放
+     *
+     * @param transaction_id
+     * @return
+     */
     @RequestMapping("queryTransactionByWechatTransactionId")
     public String queryTransactionByWechatTransactionId(@RequestParam String transaction_id) {
         String json = wechatPayService.queryTransactionByWechatTransactionId(transaction_id);

@@ -70,7 +70,7 @@ public class PageService {
         //更新为已使用
         qrCode.setIsUsed(true);
         qrCodeRepository.save(qrCode);
-        order.setQrCodeId(qrCode.get_id());
+        order.setQueryScene(qrCode.getQueryScene());
         orderRepository.save(order);
         log.info("创建订单: {}", JSON.toJSONString(order));
         return order;
@@ -82,7 +82,7 @@ public class PageService {
 
     public String getQRCodeUrlByOrder(Order order) {
         //根据订单里的qr id查到qr
-        QRCode qrCode = qrCodeRepository.findById(order.getQrCodeId()).get();
+        QRCode qrCode = qrCodeRepository.findByQueryScene(order.getQueryScene());
         //再根据qr里的oss文件id查到文件objectName
         OssFile ossFile = ossFileRepository.findById(qrCode.getOssFileId()).get();
         //再生成预签名的地址

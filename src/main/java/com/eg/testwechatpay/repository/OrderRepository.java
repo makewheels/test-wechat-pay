@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderRepository extends MongoRepository<Order, String> {
     Order findByOrderId(String orderId);
+
+    Order findByQueryScene(String queryScene);
 }

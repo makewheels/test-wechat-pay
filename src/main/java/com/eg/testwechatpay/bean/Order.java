@@ -16,12 +16,20 @@ public class Order {
 
     @Indexed
     private String orderId;
+    @Indexed
+    private String transaction_id;
+
+    private String openid;
+    @Indexed
+    private String prepay_id;
+
     private String name;
     private Integer price;
     private Date createTime;
     private Boolean isPaid;
 
-    private String qrCodeId;
+    @Indexed
+    private String queryScene;
 
     private Transaction transaction;
 

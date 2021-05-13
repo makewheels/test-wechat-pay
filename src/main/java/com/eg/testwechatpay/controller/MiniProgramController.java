@@ -65,7 +65,7 @@ public class MiniProgramController {
      */
     @RequestMapping("requestPay")
     public String requestPay(@RequestParam String openid, @RequestParam String queryScene) {
-        return miniProgramService.createOrder(openid, queryScene);
+        return miniProgramService.requestPay(openid, queryScene);
     }
 
     /**
@@ -75,9 +75,6 @@ public class MiniProgramController {
     public String onPaySuccess(@RequestParam String openid,
                                @RequestParam String queryScene,
                                @RequestParam String orderId) {
-        String json = wechatPayService.queryTransactionByOutTradeNo(orderId);
-        log.info("查询订单: orderId = {}", orderId);
-        log.info("结果为：{}", json);
-        return json;
+        return miniProgramService.onPaySuccess(openid, queryScene, orderId);
     }
 }

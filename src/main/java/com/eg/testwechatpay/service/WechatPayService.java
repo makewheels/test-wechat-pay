@@ -4,7 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
+import com.eg.testwechatpay.wechat.payresponse.PayResponse;
 import com.eg.testwechatpay.wechat.prepayid.Amount;
 import com.eg.testwechatpay.wechat.prepayid.Payer;
 import com.eg.testwechatpay.wechat.prepayid.PrepareIdRequest;
@@ -208,7 +208,7 @@ public class WechatPayService {
         JSONObject jsonObject = JSONObject.parseObject(json);
         String prepay_id = jsonObject.getString("prepay_id");
         if (StringUtils.isEmpty(prepay_id))
-            log.warn("创建预付订单出错，微信返回的结果中没有prepay_id, 微信返回: {}", jsonObject);
+            log.error("创建预付订单出错，微信返回的结果中没有prepay_id, 微信返回: {}", jsonObject);
         else
             log.info("创建预付订单成功，微信返回: {}", jsonObject);
         return prepay_id;
@@ -229,7 +229,7 @@ public class WechatPayService {
      * @param prepay_id
      * @return
      */
-    public MiniProgramResponse getMiniProgramResponse(String prepay_id,String orderId) {
+    public PayResponse getMiniProgramResponse(String prepay_id, String orderId) {
         long timeStamp = System.currentTimeMillis() / 1000;
         String nonceStr = RandomStringUtils.randomAlphanumeric(20);
         String packageStr = "prepay_id=" + prepay_id;
@@ -239,15 +239,15 @@ public class WechatPayService {
                 + packageStr + "\n";
         String paySign = sign(signText);
 
-        MiniProgramResponse miniProgramResponse = new MiniProgramResponse();
-        miniProgramResponse.setOrderId(orderId);
-        miniProgramResponse.setTimeStamp(timeStamp + "");
-        miniProgramResponse.setNonceStr(nonceStr);
-        miniProgramResponse.setPackageStr(packageStr);
-        miniProgramResponse.setSignType("RSA");
-        miniProgramResponse.setPaySign(paySign);
-        log.info("小程序支付所需提交信息: " + JSON.toJSONString(miniProgramResponse));
-        return miniProgramResponse;
+        PayResponse payResponse = new PayResponse();
+        payResponse.setOrderId(orderId);
+        payResponse.setTimeStamp(timeStamp + "");
+        payResponse.setNonceStr(nonceStr);
+        payResponse.setPackageStr(packageStr);
+        payResponse.setSignType("RSA");
+        payResponse.setPaySign(paySign);
+        log.info("小程序支付所需提交信息: " + JSON.toJSONString(payResponse));
+        return payResponse;
     }
 
     /**

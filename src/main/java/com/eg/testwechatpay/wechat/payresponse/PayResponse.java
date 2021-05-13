@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-public class MiniProgramResponse {
+public class PayResponse {
     private String timeStamp;
     private String nonceStr;
     @JSONField(name = "package")

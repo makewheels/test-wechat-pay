@@ -1,6 +1,5 @@
 package com.eg.testwechatpay.service;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.http.HttpRequest;
@@ -14,10 +13,12 @@ import com.eg.testwechatpay.bean.QRCode;
 import com.eg.testwechatpay.repository.OrderRepository;
 import com.eg.testwechatpay.repository.OssFileRepository;
 import com.eg.testwechatpay.repository.QRCodeRepository;
-import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
+import com.eg.testwechatpay.wechat.payresponse.PayResponse;
 import com.eg.testwechatpay.wechat.qrcode.QRCodeRequest;
+import com.eg.testwechatpay.wechat.transaction.Transaction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -163,21 +163,69 @@ public class MiniProgramService {
     }
 
     /**
-     * 创建订单
+     * 请求支付
      *
      * @param openid
      * @param queryScene
      * @return
      */
-    public String createOrder(String openid, String queryScene) {
-        String orderId = wechatPayService.getOrderId();
-        log.info("创建订单, orderId = {}", orderId);
-        String description = "在线捐款" + RandomUtil.randomNumbers(4);
-        int amountTotal = 1;
-        String prepay_id = wechatPayService.getJsapiPrepayId(
-                openid, description, amountTotal, orderId);
-        MiniProgramResponse miniProgramResponse
-                = wechatPayService.getMiniProgramResponse(prepay_id, orderId);
-        return JSON.toJSONString(miniProgramResponse);
+    public String requestPay(String openid, String queryScene) {
+        //先根据queryScene查出订单
+        Order order = orderRepository.findByQueryScene(queryScene);
+        //如果没找到这个订单
+        if (order == null)
+            return null;
+        String orderId = order.getOrderId();
+        String prepay_id = order.getPrepay_id();
+        //如果订单没有生成过预付订单号，那就生成，并且更新保存数据库
+        if (StringUtils.isEmpty(prepay_id)) {
+            prepay_id = wechatPayService.getJsapiPrepayId(
+                    openid, order.getName(), order.getPrice(), orderId);
+            order.setOpenid(openid);
+            order.setPrepay_id(prepay_id);
+            orderRepository.save(order);
+        } else {
+            log.info("微信预付订单号已存在, prepay_id = {}", prepay_id);
+        }
+        PayResponse payResponse = wechatPayService
+                .getMiniProgramResponse(prepay_id, orderId);
+        return JSON.toJSONString(payResponse);
+    }
+
+    /**
+     * 当订单支付完成时
+     *
+     * @param openid
+     * @param queryScene
+     * @param orderId
+     * @return
+     */
+    public String onPaySuccess(String openid, String queryScene, String orderId) {
+        String json = wechatPayService.queryTransactionByOutTradeNo(orderId);
+        log.info("向微信查询订单, 商户订单号: {}, 微信返回结果为: {}", orderId, json);
+
+        Transaction transaction = JSON.parseObject(json, Transaction.class);
+        //判断微信返回的支付状态
+        if (!transaction.getTrade_state().equals("SUCCESS"))
+            return null;
+        //更新订单状态
+        Order order = orderRepository.findByOrderId(orderId);
+        //判断queryScene是否匹配
+        if (!order.getQueryScene().equals(queryScene))
+            return null;
+        //判断openid是否匹配
+        if (!order.getOpenid().equals(openid))
+            return null;
+
+        String transaction_id = transaction.getTransaction_id();
+        log.info("订单支付成功, 微信订单号: {}, 商户订单号: {}, 支付时间: {}",
+                transaction_id, orderId, transaction.getSuccess_time());
+
+        order.setIsPaid(true);
+        order.setTransaction_id(transaction_id);
+        order.setTransaction(transaction);
+        orderRepository.save(order);
+        log.info("更新订单状态: {}", JSON.toJSONString(order));
+        return json;
     }
 }
