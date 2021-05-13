@@ -62,7 +62,7 @@ public class MiniProgramController {
                                @RequestParam String queryScene,
                                @RequestParam String orderId) {
         String json = wechatPayService.queryTransactionByOutTradeNo(orderId);
-        log.info("查询订单: orderId = {}" + orderId);
+        log.info("查询订单: orderId = {}", orderId);
         log.info("结果为：{}", json);
         return json;
     }
