@@ -21,11 +21,23 @@ public class MiniProgramController {
     @Resource
     private WechatPayService wechatPayService;
 
-    @RequestMapping("generateQRCode")
-    public List<QRCode> generateQRCode(@RequestParam int amount) {
-        return miniProgramService.generateQRCode(amount);
+    /**
+     * 批量创建小程序码：接口不对外
+     *
+     * @param amount
+     * @return
+     */
+    @RequestMapping("batchCreateQRCode")
+    public List<QRCode> batchCreateQRCode(@RequestParam int amount) {
+        return miniProgramService.batchCreateQRCode(amount);
     }
 
+    /**
+     * 小程序登录
+     *
+     * @param js_code
+     * @return
+     */
     @RequestMapping("login")
     public String login(@RequestParam String js_code) {
         JSONObject login = miniProgramService.login(js_code);

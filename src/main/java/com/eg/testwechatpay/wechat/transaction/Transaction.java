@@ -11,7 +11,7 @@ import java.util.Date;
  * @author json.cn (i@json.cn)
  * @website http://www.json.cn/java2pojo/
  */
-public class TransactionResult {
+public class Transaction {
 
     private Amount amount;
     private String appid;

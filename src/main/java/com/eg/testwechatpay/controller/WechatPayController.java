@@ -2,7 +2,7 @@ package com.eg.testwechatpay.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eg.testwechatpay.wechat.transaction.TransactionResult;
+import com.eg.testwechatpay.wechat.transaction.Transaction;
 import com.eg.testwechatpay.service.WechatPayService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -57,8 +57,8 @@ public class WechatPayController {
     @RequestMapping("queryTransactionByWechatTransactionId")
     public String queryTransactionByWechatTransactionId(@RequestParam String transaction_id) {
         String json = wechatPayService.queryTransactionByWechatTransactionId(transaction_id);
-        TransactionResult transactionResult = JSON.parseObject(json, TransactionResult.class);
-        System.out.println("transactionResult.getTrade_state() = " + transactionResult.getTrade_state());
-        return transactionResult.getTransaction_id();
+        Transaction transaction = JSON.parseObject(json, Transaction.class);
+        System.out.println("transactionResult.getTrade_state() = " + transaction.getTrade_state());
+        return transaction.getTransaction_id();
     }
 }

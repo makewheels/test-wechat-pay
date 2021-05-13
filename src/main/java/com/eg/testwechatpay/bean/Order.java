@@ -1,6 +1,6 @@
 package com.eg.testwechatpay.bean;
 
-import com.eg.testwechatpay.wechat.transaction.TransactionResult;
+import com.eg.testwechatpay.wechat.transaction.Transaction;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -16,9 +16,13 @@ public class Order {
 
     @Indexed
     private String orderId;
+    private String name;
+    private Integer price;
     private Date createTime;
     private Boolean isPaid;
 
-    private TransactionResult transaction;
+    private String qrCodeId;
+
+    private Transaction transaction;
 
 }

@@ -16,7 +16,7 @@ public class QRCode {
 
     @Indexed
     private String queryScene;
-    private Boolean isEnable;
+    private Boolean isUsed;
     private Date createTime;
 
     private String ossFileId;

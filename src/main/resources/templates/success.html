@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>支付完成</title>
+    <link rel="stylesheet" href="//unpkg.com/layui@2.6.6/dist/css/layui.css"/>
+    <script src="//unpkg.com/layui@2.6.6/dist/layui.js"></script>
+</head>
+<body>
+
+<h1>支付完成</h1>
+<br>
+
+<b>订单号</b>
+<span th:text="${orderId}"></span>
+<br>
+
+<b>商品名称</b>
+<span th:text="${name}"></span>
+<br>
+
+<b>价格</b>
+<span th:text="${price}"></span>
+<br>
+
+</body>
+</html>

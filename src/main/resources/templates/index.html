@@ -2,9 +2,45 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>商品列表</title>
+    <link rel="stylesheet" href="//unpkg.com/layui@2.6.6/dist/css/layui.css"/>
+    <script src="//unpkg.com/layui@2.6.6/dist/layui.js"></script>
 </head>
 <body>
-<img th:src="${imageUrl}" width="250" height="250"/>
+<table border="1" style="margin-left: 100px;margin-top: 30px">
+    <tr>
+        <th>商品</th>
+        <th>价格</th>
+        <th>操作</th>
+    </tr>
+    <tr>
+        <td style="padding: 5px">荧光棒</td>
+        <td style="padding: 5px">¥0.01</td>
+        <td style="padding: 5px">
+            <a th:href="@{/page/createOrder?itemId=1}">
+                <button type="button" class="layui-btn">下单</button>
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 5px">糖豆车</td>
+        <td style="padding: 5px">¥0.02</td>
+        <td style="padding: 5px">
+            <a th:href="@{/page/createOrder?itemId=2}">
+                <button type="button" class="layui-btn">下单</button>
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 5px">火箭</td>
+        <td style="padding: 5px">¥0.03</td>
+        <td style="padding: 5px">
+            <a th:href="@{/page/createOrder?itemId=3}">
+                <button type="button" class="layui-btn">下单</button>
+            </a>
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>

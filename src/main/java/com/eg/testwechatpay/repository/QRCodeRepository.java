@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QRCodeRepository extends MongoRepository<QRCode, String> {
     QRCode findByQueryScene(String queryScene);
+
 }

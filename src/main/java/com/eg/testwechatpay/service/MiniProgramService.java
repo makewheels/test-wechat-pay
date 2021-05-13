@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +51,11 @@ public class MiniProgramService {
     @Resource
     private OssService ossService;
 
+    /**
+     * 生成queryScene
+     *
+     * @return
+     */
     private String getQueryScene() {
         String queryScene;
         QRCode find;
@@ -60,33 +66,39 @@ public class MiniProgramService {
         return queryScene;
     }
 
-    public List<QRCode> generateQRCode(int amount) {
-        String queryScene = getQueryScene();
+    /**
+     * 批量创建小程序码
+     *
+     * @param amount
+     * @return
+     */
+    public List<QRCode> batchCreateQRCode(int amount) {
         List<QRCode> qrCodes = new ArrayList<>(amount);
         for (int i = 0; i < amount; i++) {
-            QRCode qrCode = createQRCode(queryScene);
+            QRCode qrCode = createQRCode();
             qrCodes.add(qrCode);
         }
         return qrCodes;
     }
 
     /**
-     * 生成小程序码
+     * 生成单个小程序码
      */
-    public QRCode createQRCode(String queryScene) {
+    public QRCode createQRCode() {
         String getwxacodeunlimitUrl = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
                 + secretService.getAccessToken();
+        String queryScene = getQueryScene();
         QRCodeRequest request = new QRCodeRequest();
         request.setScene(queryScene);
         HttpResponse response = HttpRequest.post(getwxacodeunlimitUrl)
                 .body(JSON.toJSONString(request))
                 .execute();
-        File folder = new File(SystemUtils.getUserHome() + "/Downloads/qrcode/");
+        File folder = SystemUtils.getJavaIoTmpDir();
         if (!folder.exists())
             folder.mkdirs();
         File imageFile = new File(folder,
                 System.currentTimeMillis() + "-" + queryScene + ".jpg");
-        log.info("生成小程序码，下载文件");
+        log.info("生成小程序码，queryScene = {}, 下载文件: {}", queryScene, imageFile.getPath());
         //下载文件
         try {
             FileUtils.writeByteArrayToFile(imageFile, response.bodyBytes());
@@ -105,18 +117,18 @@ public class MiniProgramService {
         ossFile.setMd5(SecureUtil.md5(imageFile));
         ossFile.setCreateTime(new Date());
         ossFileRepository.save(ossFile);
-        log.info("保存ossFile: {}", JSON.toJSONString(ossFile));
+        log.info("保存ossFile到数据库: {}", JSON.toJSONString(ossFile));
         //删除本地文件
-        imageFile.delete();
-        log.info("删除本地文件: {}", imageFile.getPath());
+        boolean deleteResult = imageFile.delete();
+        log.info("删除本地文件: 删除结果: {}, 文件路径: {}", deleteResult, imageFile.getPath());
         //返回对象
         QRCode qrCode = new QRCode();
         qrCode.setCreateTime(new Date());
         qrCode.setQueryScene(queryScene);
-        qrCode.setIsEnable(false);
+        qrCode.setIsUsed(false);
         qrCode.setOssFileId(ossFile.get_id());
         qrCodeRepository.save(qrCode);
-        log.info("保存qrCode: {}", JSON.toJSONString(qrCode));
+        log.info("保存qrCode到数据库: {}", JSON.toJSONString(qrCode));
         return qrCode;
     }
 
@@ -159,11 +171,6 @@ public class MiniProgramService {
      */
     public String createOrder(String openid, String queryScene) {
         String orderId = wechatPayService.getOrderId();
-        //TODO 保存数据库
-        Order order = new Order();
-        order.setCreateTime(new Date());
-        order.setIsPaid(false);
-        orderRepository.save(order);
         log.info("创建订单, orderId = {}", orderId);
         String description = "在线捐款" + RandomUtil.randomNumbers(4);
         int amountTotal = 1;
