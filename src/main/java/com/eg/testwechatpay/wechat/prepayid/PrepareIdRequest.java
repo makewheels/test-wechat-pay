@@ -1,7 +1,7 @@
 /**
   * Copyright 2021 json.cn 
   */
-package com.eg.testwechatpay.bean.prepayid;
+package com.eg.testwechatpay.wechat.prepayid;
 
 /**
  * Auto-generated: 2021-05-11 22:37:2

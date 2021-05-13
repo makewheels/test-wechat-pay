@@ -1,4 +1,4 @@
-package com.eg.testwechatpay.bean.payresponse;
+package com.eg.testwechatpay.wechat.payresponse;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;

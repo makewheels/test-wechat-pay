@@ -2,8 +2,7 @@ package com.eg.testwechatpay.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.eg.testwechatpay.bean.payresponse.MiniProgramResponse;
-import com.eg.testwechatpay.bean.transaction.query.TransactionResult;
+import com.eg.testwechatpay.wechat.transaction.TransactionResult;
 import com.eg.testwechatpay.service.WechatPayService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

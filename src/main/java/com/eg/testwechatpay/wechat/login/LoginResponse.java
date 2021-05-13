@@ -1,4 +1,4 @@
-package com.eg.testwechatpay.bean.login;
+package com.eg.testwechatpay.wechat.login;
 
 import lombok.Data;
 

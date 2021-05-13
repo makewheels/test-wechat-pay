@@ -1,4 +1,4 @@
-package com.eg.testwechatpay.bean.qrcode;
+package com.eg.testwechatpay.wechat.qrcode;
 
 import lombok.Data;
 

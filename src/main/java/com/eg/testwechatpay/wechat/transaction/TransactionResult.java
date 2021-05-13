@@ -1,7 +1,7 @@
 /**
   * Copyright 2021 json.cn 
   */
-package com.eg.testwechatpay.bean.transaction.query;
+package com.eg.testwechatpay.wechat.transaction;
 import java.util.List;
 import java.util.Date;
 

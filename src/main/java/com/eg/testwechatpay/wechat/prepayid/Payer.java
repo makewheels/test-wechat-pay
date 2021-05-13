@@ -1,10 +1,10 @@
 /**
   * Copyright 2021 json.cn 
   */
-package com.eg.testwechatpay.bean.transaction.query;
+package com.eg.testwechatpay.wechat.prepayid;
 
 /**
- * Auto-generated: 2021-05-12 14:4:23
+ * Auto-generated: 2021-05-11 22:37:2
  *
  * @author json.cn (i@json.cn)
  * @website http://www.json.cn/java2pojo/
