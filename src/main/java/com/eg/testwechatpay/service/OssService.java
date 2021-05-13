@@ -28,7 +28,7 @@ public class OssService {
 
     public String upload(File file, String objectName) {
         PutObjectRequest request = new PutObjectRequest(bucketName, objectName, file);
-        PutObjectResult result = ossClient.putObject(request);
+        PutObjectResult result = getOssClient().putObject(request);
         return baseUrl + "/" + objectName;
     }
 }
