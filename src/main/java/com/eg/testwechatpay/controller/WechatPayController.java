@@ -24,6 +24,13 @@ public class WechatPayController {
                 "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI", "的大范围", 1, orderId);
     }
 
+    /**
+     * 不对外开放，仅测试接口
+     *
+     * @param openid
+     * @param queryScene
+     * @return
+     */
     @RequestMapping("createOrder")
     public String createOrder(@RequestParam String openid, @RequestParam String queryScene) {
         String orderId = wechatPayService.getOrderId();
@@ -34,7 +41,7 @@ public class WechatPayController {
             log.warn("创建预付订单失败，不再生成小程序支付所需提交信息");
             return null;
         }
-        return JSON.toJSONString(wechatPayService.getMiniProgramResponse(prepay_id));
+        return JSON.toJSONString(wechatPayService.getMiniProgramResponse(prepay_id, orderId));
     }
 
     @RequestMapping("callback")

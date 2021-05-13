@@ -2,6 +2,8 @@ package com.eg.testwechatpay.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.eg.testwechatpay.service.MiniProgramService;
+import com.eg.testwechatpay.service.WechatPayService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,9 +12,12 @@ import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("miniProgram")
+@Slf4j
 public class MiniProgramController {
     @Resource
     private MiniProgramService miniProgramService;
+    @Resource
+    private WechatPayService wechatPayService;
 
     @RequestMapping("getQRCode")
     public String getQRCode() {
@@ -35,5 +40,30 @@ public class MiniProgramController {
     @RequestMapping("router")
     public String router(@RequestParam String queryScene) {
         return miniProgramService.route(queryScene);
+    }
+
+    /**
+     * 请求支付
+     *
+     * @param openid
+     * @param queryScene
+     * @return
+     */
+    @RequestMapping("requestPay")
+    public String requestPay(@RequestParam String openid, @RequestParam String queryScene) {
+        return miniProgramService.createOrder(openid, queryScene);
+    }
+
+    /**
+     * 当小程序支付成功时
+     */
+    @RequestMapping("onPaySuccess")
+    public String onPaySuccess(@RequestParam String openid,
+                               @RequestParam String queryScene,
+                               @RequestParam String orderId) {
+        String json = wechatPayService.queryTransactionByOutTradeNo(orderId);
+        log.info("查询订单: orderId = {}" + orderId);
+        log.info("结果为：{}" + json);
+        return json;
     }
 }

@@ -238,7 +238,7 @@ public class WechatPayService {
      * @param prepay_id
      * @return
      */
-    public MiniProgramResponse getMiniProgramResponse(String prepay_id) {
+    public MiniProgramResponse getMiniProgramResponse(String prepay_id,String orderId) {
         long timeStamp = System.currentTimeMillis() / 1000;
         String nonceStr = RandomStringUtils.randomAlphanumeric(16);
         String packageStr = "prepay_id=" + prepay_id;
@@ -249,6 +249,7 @@ public class WechatPayService {
         String paySign = sign(signText);
 
         MiniProgramResponse miniProgramResponse = new MiniProgramResponse();
+        miniProgramResponse.setOrderId(orderId);
         miniProgramResponse.setTimeStamp(timeStamp + "");
         miniProgramResponse.setNonceStr(nonceStr);
         miniProgramResponse.setPackageStr(packageStr);

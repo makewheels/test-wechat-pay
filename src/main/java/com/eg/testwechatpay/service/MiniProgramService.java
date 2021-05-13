@@ -1,10 +1,12 @@
 package com.eg.testwechatpay.service;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.payresponse.MiniProgramResponse;
 import com.eg.testwechatpay.bean.qrcode.QRCodeRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -25,6 +27,8 @@ public class MiniProgramService {
 
     @Resource
     private SecretService secretService;
+    @Resource
+    private WechatPayService wechatPayService;
 
     /**
      * 生成小程序码
@@ -74,9 +78,30 @@ public class MiniProgramService {
      * @return
      */
     public String route(String queryScene) {
+        //TODO 查询数据库
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("version", 1);
         jsonObject.put("cmd", "pay");
         return jsonObject.toJSONString();
+    }
+
+    /**
+     * 创建订单
+     *
+     * @param openid
+     * @param queryScene
+     * @return
+     */
+    public String createOrder(String openid, String queryScene) {
+        String orderId = wechatPayService.getOrderId();
+        //TODO 保存数据库
+        log.info("创建订单, orderId = {}", orderId);
+        String description = "在线捐款" + RandomUtil.randomNumbers(4);
+        int amountTotal = 1;
+        String prepay_id = wechatPayService.getJsapiPrepayId(
+                openid, description, amountTotal, orderId);
+        MiniProgramResponse miniProgramResponse
+                = wechatPayService.getMiniProgramResponse(prepay_id, orderId);
+        return JSON.toJSONString(miniProgramResponse);
     }
 }

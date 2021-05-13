@@ -11,4 +11,7 @@ public class MiniProgramResponse {
     private String packageStr;
     private String signType;
     private String paySign;
+
+    //上面都是小程序提交的信息，但是这个是我的订单号
+    private String orderId;
 }
