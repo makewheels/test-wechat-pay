@@ -26,11 +26,18 @@ public class MiniProgramService {
     @Resource
     private SecretService secretService;
 
+    /**
+     * 生成小程序码
+     *
+     * @return
+     */
     public String getQRCode() {
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
                 + secretService.getAccessToken();
         QRCodeRequest request = new QRCodeRequest();
-        request.setScene(RandomStringUtils.randomAlphanumeric(16));
+        String scene = RandomStringUtils.randomAlphanumeric(16);
+        System.out.println(scene);
+        request.setScene(scene);
         HttpResponse response = HttpRequest.post(url)
                 .body(JSON.toJSONString(request))
                 .execute();
@@ -44,13 +51,32 @@ public class MiniProgramService {
         return null;
     }
 
-    public String login(String js_code) {
+    /**
+     * 登录
+     *
+     * @param js_code
+     * @return
+     */
+    public JSONObject login(String js_code) {
         String json = HttpUtil.get("https://api.weixin.qq.com/sns/jscode2session?appid=" + appid
                 + "&secret=" + secretService.getAppSecret() + "&js_code=" + js_code
                 + "&grant_type=authorization_code");
         JSONObject jsonObject = JSONObject.parseObject(json);
         String openid = jsonObject.getString("openid");
         log.info("小程序登陆, js_code = {}, openid = {}", js_code, openid);
-        return json;
+        return jsonObject;
+    }
+
+    /**
+     * 路由
+     *
+     * @param queryScene
+     * @return
+     */
+    public String route(String queryScene) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("version", 1);
+        jsonObject.put("cmd", "pay");
+        return jsonObject.toJSONString();
     }
 }

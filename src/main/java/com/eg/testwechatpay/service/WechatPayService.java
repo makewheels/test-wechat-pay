@@ -11,6 +11,7 @@ import com.eg.testwechatpay.bean.prepayid.PrepareIdRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -203,12 +204,10 @@ public class WechatPayService {
         request.setDescription(description);
         request.setOut_trade_no(orderId);
         request.setNotify_url(notify_url);
-        Amount amount
-                = new Amount();
+        Amount amount = new Amount();
         amount.setTotal(amountTotal);
         request.setAmount(amount);
-        Payer payer
-                = new Payer();
+        Payer payer = new Payer();
         payer.setOpenid(openid);
         request.setPayer(payer);
 
@@ -216,8 +215,12 @@ public class WechatPayService {
         String json = postRequest("/v3/pay/transactions/jsapi", body);
 
         JSONObject jsonObject = JSONObject.parseObject(json);
-        log.info("创建预付订单，微信返回: {}", jsonObject);
-        return jsonObject.getString("prepay_id");
+        String prepay_id = jsonObject.getString("prepay_id");
+        if (StringUtils.isEmpty(prepay_id))
+            log.warn("创建预付订单出错，微信返回的结果中没有prepay_id, 微信返回: {}", jsonObject);
+        else
+            log.info("创建预付订单成功，微信返回: {}", jsonObject);
+        return prepay_id;
     }
 
     /**

@@ -21,11 +21,19 @@ public class MiniProgramController {
 
     @RequestMapping("login")
     public String login(@RequestParam String js_code) {
-        String json = miniProgramService.login(js_code);
-        JSONObject jsonObject = JSONObject.parseObject(json);
+        JSONObject login = miniProgramService.login(js_code);
+        String openid = login.getString("openid");
+
         JSONObject result = new JSONObject();
-        result.put("openid", jsonObject.getString("openid"));
+        result.put("openid", openid);
         return result.toJSONString();
     }
 
+    /**
+     * 传入小程序码中的场景值，这里相当于是个路由
+     */
+    @RequestMapping("router")
+    public String router(@RequestParam String queryScene) {
+        return miniProgramService.route(queryScene);
+    }
 }
