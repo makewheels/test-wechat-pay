@@ -8,8 +8,10 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.Order;
 import com.eg.testwechatpay.bean.OssFile;
 import com.eg.testwechatpay.bean.QRCode;
+import com.eg.testwechatpay.repository.OrderRepository;
 import com.eg.testwechatpay.repository.OssFileRepository;
 import com.eg.testwechatpay.repository.QRCodeRepository;
 import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
@@ -42,6 +44,8 @@ public class MiniProgramService {
     private QRCodeRepository qrCodeRepository;
     @Resource
     private OssFileRepository ossFileRepository;
+    @Resource
+    private OrderRepository orderRepository;
 
     @Resource
     private OssService ossService;
@@ -156,6 +160,10 @@ public class MiniProgramService {
     public String createOrder(String openid, String queryScene) {
         String orderId = wechatPayService.getOrderId();
         //TODO 保存数据库
+        Order order = new Order();
+        order.setCreateTime(new Date());
+        order.setIsPaid(false);
+        orderRepository.save(order);
         log.info("创建订单, orderId = {}", orderId);
         String description = "在线捐款" + RandomUtil.randomNumbers(4);
         int amountTotal = 1;

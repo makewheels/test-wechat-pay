@@ -1,10 +1,8 @@
 package com.eg.testwechatpay.service;
 
-import cn.hutool.core.date.DateUtil;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.internal.OSSHeaders;
-import com.aliyun.oss.model.*;
+import com.aliyun.oss.model.PutObjectRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -48,11 +46,10 @@ public class OssService {
     /**
      * 生成预签名url，默认有效期20分钟
      *
-     * @param bucket
      * @param object
      * @return
      */
-    public String generatePreSignedUrl(String bucket, String object) {
+    public String generatePreSignedUrl(String object) {
         Date expiration = new Date(new Date().getTime() + 20 * 60 * 1000);
         return getOssClient().generatePresignedUrl(bucket, object, expiration).toString();
     }
@@ -60,12 +57,11 @@ public class OssService {
     /**
      * 生成预签名url
      *
-     * @param bucket
      * @param object
      * @param time
      * @return
      */
-    public String generatePreSignedUrl(String bucket, String object, long time) {
+    public String generatePreSignedUrl(String object, long time) {
         Date expiration = new Date(new Date().getTime() + time);
         return getOssClient().generatePresignedUrl(bucket, object, expiration).toString();
     }

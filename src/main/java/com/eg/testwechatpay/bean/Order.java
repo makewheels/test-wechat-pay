@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @Data
 @Document
 public class Order {
@@ -14,7 +16,7 @@ public class Order {
 
     @Indexed
     private String orderId;
-    private String createTime;
+    private Date createTime;
     private Boolean isPaid;
 
     private TransactionResult transaction;
