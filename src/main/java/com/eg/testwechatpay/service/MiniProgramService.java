@@ -1,11 +1,14 @@
 package com.eg.testwechatpay.service;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.QRCode;
+import com.eg.testwechatpay.repository.QRCodeRepository;
 import com.eg.testwechatpay.wechat.payresponse.MiniProgramResponse;
 import com.eg.testwechatpay.wechat.qrcode.QRCodeRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -30,29 +36,57 @@ public class MiniProgramService {
     @Resource
     private WechatPayService wechatPayService;
 
+    @Resource
+    private QRCodeRepository qrCodeRepository;
+
+    private String getQueryScene() {
+        String queryScene;
+        QRCode find;
+        do {
+            queryScene = RandomUtil.randomString(12);
+            find = qrCodeRepository.findByQueryScene(queryScene);
+        } while (find != null);
+        return queryScene;
+    }
+
+    public List<QRCode> generateQRCode(int amount) {
+        String queryScene = getQueryScene();
+        List<QRCode> qrCodes = new ArrayList<>(amount);
+        for (int i = 0; i < amount; i++) {
+            QRCode qrCode = createQRCode(queryScene);
+            qrCodeRepository.save(qrCode);
+            qrCodes.add(qrCode);
+        }
+        return qrCodes;
+    }
+
     /**
      * 生成小程序码
-     *
-     * @return
      */
-    public String getQRCode() {
+    public QRCode createQRCode(String queryScene) {
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="
                 + secretService.getAccessToken();
         QRCodeRequest request = new QRCodeRequest();
-        String scene = RandomStringUtils.randomAlphanumeric(16);
-        System.out.println(scene);
-        request.setScene(scene);
+        request.setScene(queryScene);
         HttpResponse response = HttpRequest.post(url)
                 .body(JSON.toJSONString(request))
                 .execute();
-        File file = new File(SystemUtils.getUserHome()
-                + "/Downloads/" + System.currentTimeMillis() + ".jpg");
+        File folder = new File(SystemUtils.getUserHome() + "/Downloads/qrcode/");
+        if (!folder.exists())
+            folder.mkdirs();
+        File imageFile = new File(folder,
+                System.currentTimeMillis() + "-" + IdUtil.simpleUUID() + ".jpg");
         try {
-            FileUtils.writeByteArrayToFile(file, response.bodyBytes());
+            FileUtils.writeByteArrayToFile(imageFile, response.bodyBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        QRCode qrCode = new QRCode();
+        qrCode.setCreateTime(new Date());
+        qrCode.setQueryScene(queryScene);
+        qrCode.setIsEnable(false);
+        qrCode.setLocalFile(imageFile);
+        return qrCode;
     }
 
     /**

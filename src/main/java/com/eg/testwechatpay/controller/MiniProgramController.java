@@ -1,6 +1,7 @@
 package com.eg.testwechatpay.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.eg.testwechatpay.bean.QRCode;
 import com.eg.testwechatpay.service.MiniProgramService;
 import com.eg.testwechatpay.service.WechatPayService;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @RequestMapping("miniProgram")
@@ -19,9 +21,9 @@ public class MiniProgramController {
     @Resource
     private WechatPayService wechatPayService;
 
-    @RequestMapping("getQRCode")
-    public String getQRCode() {
-        return miniProgramService.getQRCode();
+    @RequestMapping("generateQRCode")
+    public List<QRCode> generateQRCode(@RequestParam int amount) {
+        return miniProgramService.generateQRCode(amount);
     }
 
     @RequestMapping("login")

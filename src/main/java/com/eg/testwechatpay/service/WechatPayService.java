@@ -44,15 +44,6 @@ public class WechatPayService {
 
     private PrivateKey privateKey;
 
-    public static void main(String[] args) {
-        String s = IdUtil.simpleUUID();
-        System.out.println(s);
-        String s1 = new BigInteger(s, 16).toString(36);
-        System.out.println(s1);
-        System.out.println(s1.length());
-        System.out.println(Base64.getEncoder().encodeToString(s1.getBytes()));
-    }
-
     public String getOrderId() {
         String uuid = IdUtil.simpleUUID();
         return new BigInteger(uuid, 16).toString(36);
@@ -118,7 +109,7 @@ public class WechatPayService {
      */
     private String getAuthorizationHeader(String method, String url, String body) {
         long timestamp = System.currentTimeMillis() / 1000;
-        String nonce_str = RandomStringUtils.randomAlphanumeric(16);
+        String nonce_str = RandomStringUtils.randomAlphanumeric(20);
 
         if (body == null)
             body = "";
@@ -240,7 +231,7 @@ public class WechatPayService {
      */
     public MiniProgramResponse getMiniProgramResponse(String prepay_id,String orderId) {
         long timeStamp = System.currentTimeMillis() / 1000;
-        String nonceStr = RandomStringUtils.randomAlphanumeric(16);
+        String nonceStr = RandomStringUtils.randomAlphanumeric(20);
         String packageStr = "prepay_id=" + prepay_id;
         String signText = appid + "\n"
                 + timeStamp + "\n"

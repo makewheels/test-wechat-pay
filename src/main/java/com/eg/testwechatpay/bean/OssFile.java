@@ -2,24 +2,21 @@ package com.eg.testwechatpay.bean;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.File;
 import java.util.Date;
 
 @Data
 @Document
-public class QRCode {
+public class OssFile {
     @Id
     private String _id;
 
-    @Indexed
-    private String queryScene;
-    private Boolean isEnable;
+    private String bucket;
+    private String key;
+    private String url;
+    private Long size;
+    private String md5;
     private Date createTime;
 
-    private OssFile ossFile;
-
-    private File localFile;
 }
