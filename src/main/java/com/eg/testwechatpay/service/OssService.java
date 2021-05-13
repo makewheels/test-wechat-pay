@@ -11,8 +11,10 @@ import java.util.Date;
 @Service
 public class OssService {
     private final String endpoint = "https://oss-cn-beijing.aliyuncs.com";
-    private final String accessKeyId = "LTAI5t6n9vK3GSeMBrBpX8Uh";
-    private final String accessKeySecret = "TDetsTTvIYQme1LH5RY613UPKMkLd6";
+    private final String accessKeyId = System.getenv(
+            "test_wechat_pay_aliyun_oss_accessKeyId");
+    private final String accessKeySecret = System.getenv(
+            "test_wechat_pay_aliyun_oss_accessKeySecret");
     private final String bucket = "test-wechat-pay";
 
     private final String baseUrl = "https://test-wechat-pay.oss-cn-beijing.aliyuncs.com";

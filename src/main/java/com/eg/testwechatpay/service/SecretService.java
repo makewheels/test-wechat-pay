@@ -15,7 +15,7 @@ public class SecretService {
     private String accessToken;
 
     public String getAppSecret() {
-        return System.getenv("wechat.secret");
+        return System.getenv("test_wechat_pay_wechat_app_secret");
     }
 
     public String getAccessToken() {

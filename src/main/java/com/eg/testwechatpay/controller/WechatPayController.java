@@ -50,7 +50,7 @@ public class WechatPayController {
 
     @RequestMapping("callback")
     public String callback(@RequestBody JSONObject jsonObject) {
-        System.out.println("WechatPayController.callback " + jsonObject);
+        System.out.println("WechatPayController.callback = " + jsonObject);
         return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
 
