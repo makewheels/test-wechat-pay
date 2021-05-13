@@ -5,12 +5,12 @@ APP_NAME=test-wechat-pay
 
 PROG_NAME=$0
 ACTION=$1
-APP_START_TIMEOUT=20                                           # 等待应用启动的时间
-APP_PORT=5010                                                  # 应用端口
-HEALTH_CHECK_URL=https://java8.icu:${APP_PORT}/page/home       # 应用健康检查URL
-APP_HOME=/home/admin/${APP_NAME}                               # 从package.tgz中解压出来的jar包放到这个目录下
-JAR_NAME=${APP_HOME}/target/test-wechat-pay-0.0.1-SNAPSHOT.jar # jar包的名字
-JAVA_OUT=${APP_HOME}/logs/start.log                            #应用的启动日志
+APP_START_TIMEOUT=20                                                     # 等待应用启动的时间
+APP_PORT=5010                                                            # 应用端口
+HEALTH_CHECK_URL=https://java8.icu:${APP_PORT}/test-wechat-pay/page/home # 应用健康检查URL
+APP_HOME=/home/admin/${APP_NAME}                                         # 从package.tgz中解压出来的jar包放到这个目录下
+JAR_NAME=${APP_HOME}/target/test-wechat-pay-0.0.1-SNAPSHOT.jar           # jar包的名字
+JAVA_OUT=${APP_HOME}/logs/start.log                                      #应用的启动日志
 
 # 创建出相关目录
 mkdir -p ${APP_HOME}
