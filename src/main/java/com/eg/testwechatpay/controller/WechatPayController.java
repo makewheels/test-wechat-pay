@@ -50,7 +50,7 @@ public class WechatPayController {
 
     @RequestMapping("callback")
     public String callback(@RequestBody JSONObject jsonObject) {
-        System.out.println("WechatPayController.callback = " + jsonObject);
+        log.info("WechatPayController.callback = " + jsonObject);
         return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
 
@@ -77,5 +77,10 @@ public class WechatPayController {
         Transaction transaction = JSON.parseObject(json, Transaction.class);
         System.out.println("transactionResult.getTrade_state() = " + transaction.getTrade_state());
         return transaction.getTransaction_id();
+    }
+
+    @RequestMapping("createNative")
+    public String createNative() {
+        return wechatPayService.createNative();
     }
 }

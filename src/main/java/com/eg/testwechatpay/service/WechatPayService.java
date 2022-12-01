@@ -44,12 +44,12 @@ public class WechatPayService {
 
     private PrivateKey privateKey;
 
+    public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
+
     public String getOrderId() {
         String uuid = IdUtil.simpleUUID();
         return new BigInteger(uuid, 16).toString(36);
     }
-
-    public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
 
     /**
      * 读取本地私钥
@@ -255,8 +255,8 @@ public class WechatPayService {
      * <p>
      * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
      * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
-     *
-     * @return {
+     * <p>
+     * {
      * "amount": {
      * "currency": "CNY",
      * "payer_currency": "CNY",
@@ -293,5 +293,34 @@ public class WechatPayService {
     public String queryTransactionByWechatTransactionId(String transaction_id) {
         String relativeUrl = "/v3/pay/transactions/id/" + transaction_id + "?mchid=" + mchid;
         return getRequest(relativeUrl);
+    }
+
+    public String createNative() {
+        // {
+        //     "mchid": "1900006XXX",
+        //     "out_trade_no": "native12177525012014070332333",
+        //     "appid": "wxdace645e0bc2cXXX",
+        //     "description": "Image形象店-深圳腾大-QQ公仔",
+        //     "notify_url": "https://weixin.qq.com/",
+        //     "amount": {
+        //         "total": 1,
+        //         "currency": "CNY"
+        //     }
+        // }
+
+        JSONObject body = new JSONObject();
+        body.put("mchid", mchid);
+        body.put("out_trade_no", getOrderId());
+        body.put("appid", appid);
+        body.put("description", "description-" + IdUtil.simpleUUID());
+        body.put("notify_url", "https://weixin.qq.com/");
+
+        JSONObject amount = new JSONObject();
+        amount.put("total", 1);
+        body.put("amount", amount);
+        log.info("创建微信支付native订单，参数为：{}", body.toJSONString());
+        String response = postRequest("/v3/pay/transactions/native", body.toJSONString());
+        log.info("微信返回创建native订单结果：{}", response);
+        return JSON.parseObject(response).getString("code_url");
     }
 }
