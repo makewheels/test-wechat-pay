@@ -290,11 +290,14 @@ public class WechatPayService {
      * <p>
      * https://api.mch.weixin.qq.com/v3/pay/transactions/id/1217752501201407033233368018
      */
-    public String queryTransactionByWechatTransactionId(String transaction_id) {
-        String relativeUrl = "/v3/pay/transactions/id/" + transaction_id + "?mchid=" + mchid;
+    public String queryTransactionByWechatTransactionId(String transactionId) {
+        String relativeUrl = "/v3/pay/transactions/id/" + transactionId + "?mchid=" + mchid;
         return getRequest(relativeUrl);
     }
 
+    /**
+     * 创建native订单
+     */
     public String createNative() {
         // {
         //     "mchid": "1900006XXX",
@@ -322,5 +325,46 @@ public class WechatPayService {
         String response = postRequest("/v3/pay/transactions/native", body.toJSONString());
         log.info("微信返回创建native订单结果：{}", response);
         return JSON.parseObject(response).getString("code_url");
+    }
+
+    /**
+     * 关闭订单
+     */
+    public void close(String outTradeNo) {
+        // {
+        //     "mchid": "1230000109"
+        // }
+        JSONObject body = new JSONObject();
+        body.put("mchid", mchid);
+        body.put("out_trade_no", outTradeNo);
+        postRequest("/transactions/out-trade-no/" + outTradeNo + "/close",
+                body.toJSONString());
+    }
+
+    /**
+     * 申请退款
+     */
+    public String refund(String outTradeNo) {
+        //  {
+        //      "transaction_id": "1217752501201407033233368018",
+        //      "out_refund_no": "1217752501201407033233368018",
+        //      "amount": {
+        //            "refund": 1,
+        //            "total": 1,
+        //            "currency": "CNY"
+        //      },
+        //  }
+        JSONObject body = new JSONObject();
+        body.put("mchid", mchid);
+        body.put("out_trade_no", outTradeNo);
+        body.put("out_refund_no", "out_refund_no-" + outTradeNo);
+
+        JSONObject amount = new JSONObject();
+        amount.put("refund", 1);
+        amount.put("total", 1);
+        amount.put("currency", "CNY");
+        body.put("amount", amount);
+
+        return postRequest("/refund/domestic/refunds", body.toJSONString());
     }
 }

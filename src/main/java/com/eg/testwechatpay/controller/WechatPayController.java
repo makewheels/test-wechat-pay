@@ -18,8 +18,6 @@ public class WechatPayController {
 
     /**
      * 测试接口不开放
-     *
-     * @return
      */
     @RequestMapping("getJsapiPrepayId")
     public String getJsapiPrepayId() {
@@ -30,10 +28,6 @@ public class WechatPayController {
 
     /**
      * 不对外开放，仅测试接口
-     *
-     * @param openid
-     * @param queryScene
-     * @return
      */
     @RequestMapping("createOrder")
     public String createOrder(@RequestParam String openid, @RequestParam String queryScene) {
@@ -56,9 +50,6 @@ public class WechatPayController {
 
     /**
      * 测试接口不开放
-     *
-     * @param out_trade_no
-     * @return
      */
     @RequestMapping("queryTransactionByOutTradeNo")
     public String queryTransactionByOutTradeNo(@RequestParam String out_trade_no) {
@@ -67,20 +58,19 @@ public class WechatPayController {
 
     /**
      * 测试接口不开放
-     *
-     * @param transaction_id
-     * @return
      */
     @RequestMapping("queryTransactionByWechatTransactionId")
-    public String queryTransactionByWechatTransactionId(@RequestParam String transaction_id) {
-        String json = wechatPayService.queryTransactionByWechatTransactionId(transaction_id);
-        Transaction transaction = JSON.parseObject(json, Transaction.class);
-        System.out.println("transactionResult.getTrade_state() = " + transaction.getTrade_state());
-        return transaction.getTransaction_id();
+    public String queryTransactionByWechatTransactionId(@RequestParam String transactionId) {
+        return wechatPayService.queryTransactionByWechatTransactionId(transactionId);
     }
 
     @RequestMapping("createNative")
     public String createNative() {
         return wechatPayService.createNative();
+    }
+
+    @RequestMapping("refund")
+    public String refund(@RequestParam String outTradeNo) {
+        return wechatPayService.refund(outTradeNo);
     }
 }
