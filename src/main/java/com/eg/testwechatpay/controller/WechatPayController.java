@@ -16,9 +16,6 @@ public class WechatPayController {
     @Resource
     private WechatPayService wechatPayService;
 
-    /**
-     * 测试接口不开放
-     */
     @RequestMapping("getJsapiPrepayId")
     public String getJsapiPrepayId() {
         String orderId = wechatPayService.getOrderId();
@@ -26,9 +23,6 @@ public class WechatPayController {
                 "ooJ4W5bJCy6ZtXIsyXbKdxXwoHwI", "的大范围", 1, orderId);
     }
 
-    /**
-     * 不对外开放，仅测试接口
-     */
     @RequestMapping("createOrder")
     public String createOrder(@RequestParam String openid, @RequestParam String queryScene) {
         String orderId = wechatPayService.getOrderId();
@@ -48,29 +42,38 @@ public class WechatPayController {
         return "{\"code\": \"SUCCESS\",\"message\": \"成功\"}";
     }
 
-    /**
-     * 测试接口不开放
-     */
     @RequestMapping("queryTransactionByOutTradeNo")
-    public String queryTransactionByOutTradeNo(@RequestParam String out_trade_no) {
+    public JSONObject queryTransactionByOutTradeNo(@RequestParam String out_trade_no) {
         return wechatPayService.queryTransactionByOutTradeNo(out_trade_no);
     }
 
-    /**
-     * 测试接口不开放
-     */
     @RequestMapping("queryTransactionByWechatTransactionId")
-    public String queryTransactionByWechatTransactionId(@RequestParam String transactionId) {
+    public JSONObject queryTransactionByWechatTransactionId(@RequestParam String transactionId) {
         return wechatPayService.queryTransactionByWechatTransactionId(transactionId);
     }
 
     @RequestMapping("createNative")
-    public String createNative() {
+    public JSONObject createNative() {
         return wechatPayService.createNative();
+    }
+
+    @RequestMapping("close")
+    public void close(@RequestParam String outTradeNo) {
+        wechatPayService.close(outTradeNo);
     }
 
     @RequestMapping("refund")
     public String refund(@RequestParam String outTradeNo) {
         return wechatPayService.refund(outTradeNo);
+    }
+
+    @RequestMapping("queryRefund")
+    public JSONObject queryRefund(@RequestParam String outRefundNo) {
+        return wechatPayService.queryRefund(outRefundNo);
+    }
+
+    @RequestMapping("tradebill")
+    public JSONObject tradebill(@RequestParam String billDate) {
+        return wechatPayService.tradebill(billDate);
     }
 }

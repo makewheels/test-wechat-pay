@@ -201,7 +201,7 @@ public class MiniProgramService {
      * @return
      */
     public String onPaySuccess(String openid, String queryScene, String orderId) {
-        String json = wechatPayService.queryTransactionByOutTradeNo(orderId);
+        String json = wechatPayService.queryTransactionByOutTradeNo(orderId).toJSONString();
         log.info("向微信查询订单, 商户订单号: {}, 微信返回结果为: {}", orderId, json);
 
         Transaction transaction = JSON.parseObject(json, Transaction.class);

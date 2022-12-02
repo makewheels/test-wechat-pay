@@ -44,7 +44,7 @@ public class WechatPayService {
 
     private PrivateKey privateKey;
 
-    public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com";
+    public static final String wechatPayBaseUrl = "https://api.mch.weixin.qq.com/v3";
 
     public String getOrderId() {
         String uuid = IdUtil.simpleUUID();
@@ -57,17 +57,12 @@ public class WechatPayService {
      * @return
      */
     private PrivateKey getPrivateKey() {
-        if (privateKey != null)
-            return privateKey;
+        if (privateKey != null) return privateKey;
         File file = new File(privateKeyPath);
         try {
             String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-            String privateKeyString = content
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s+", "");
-            privateKey = KeyFactory.getInstance("RSA").generatePrivate(
-                    new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyString)));
+            String privateKeyString = content.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replaceAll("\\s+", "");
+            privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyString)));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -102,22 +97,18 @@ public class WechatPayService {
     /**
      * 获取签名头
      *
-     * @param method GET, POST
-     * @param url    相对地址，例如 /v3/pay/transactions/jsapi
+     * @param method      GET, POST
+     * @param relativeUrl 相对地址，例如 /v3/pay/transactions/jsapi
      * @param body
      * @return
      */
-    private String getAuthorizationHeader(String method, String url, String body) {
+    private String getAuthorizationHeader(String method, String relativeUrl, String body) {
         long timestamp = System.currentTimeMillis() / 1000;
         String nonce_str = RandomStringUtils.randomAlphanumeric(20);
 
-        if (body == null)
-            body = "";
-        String signText = method + "\n"
-                + url + "\n"
-                + timestamp + "\n"
-                + nonce_str + "\n"
-                + body + "\n";
+        if (body == null) body = "";
+        String signText = method + "\n" + "/v3" + relativeUrl + "\n" + timestamp + "\n"
+                + nonce_str + "\n" + body + "\n";
 
         String signature = sign(signText);
 
@@ -126,12 +117,9 @@ public class WechatPayService {
         //  nonce_str="5EBBA407F99B95194B944F9A7ED0F726",
         //  timestamp="1620700133",
         //  signature="PACZ0q68Fw=="
-        return "WECHATPAY2-SHA256-RSA2048 "
-                + "mchid=\"" + mchid + "\","
-                + "serial_no=\"" + serial_no + "\","
-                + "timestamp=\"" + timestamp + "\","
-                + "nonce_str=\"" + nonce_str + "\","
-                + "signature=\"" + signature + "\"";
+        return "WECHATPAY2-SHA256-RSA2048 " + "mchid=\"" + mchid + "\"," + "serial_no=\""
+                + serial_no + "\"," + "timestamp=\"" + timestamp + "\"," + "nonce_str=\""
+                + nonce_str + "\"," + "signature=\"" + signature + "\"";
     }
 
     /**
@@ -142,9 +130,11 @@ public class WechatPayService {
      */
     private String getRequest(String relativeUrl) {
         String authorizationHeader = getAuthorizationHeader("GET", relativeUrl, null);
-        return HttpRequest.get(wechatPayBaseUrl + relativeUrl)
-                .auth(authorizationHeader)
-                .execute().body();
+        String url = wechatPayBaseUrl + relativeUrl;
+        log.info("微信支付发送get请求, url = {}", url);
+        String response = HttpRequest.get(url).auth(authorizationHeader).execute().body();
+        log.info("微信支付返回: {}", response);
+        return response;
     }
 
     /**
@@ -156,10 +146,13 @@ public class WechatPayService {
      */
     private String postRequest(String relativeUrl, String body) {
         String authorizationHeader = getAuthorizationHeader("POST", relativeUrl, body);
-        return HttpRequest.post(wechatPayBaseUrl + relativeUrl)
-                .auth(authorizationHeader)
-                .body(body)
-                .execute().body();
+        String url = wechatPayBaseUrl + relativeUrl;
+        log.info("微信支付发送post请求, url = {}", url);
+        log.info("微信支付发送post请求, body = {}", body);
+        String response = HttpRequest.post(url).auth(authorizationHeader)
+                .body(body).execute().body();
+        log.info("微信支付返回: {}", response);
+        return response;
     }
 
     /**
@@ -187,8 +180,7 @@ public class WechatPayService {
      * "prepay_id": "wx26112221580621e9b071c00d9e093b0000"
      * }
      */
-    public String getJsapiPrepayId(
-            String openid, String description, int amountTotal, String orderId) {
+    public String getJsapiPrepayId(String openid, String description, int amountTotal, String orderId) {
         PrepareIdRequest request = new PrepareIdRequest();
         request.setAppid(appid);
         request.setMchid(mchid);
@@ -203,14 +195,13 @@ public class WechatPayService {
         request.setPayer(payer);
 
         String body = JSON.toJSONString(request);
-        String json = postRequest("/v3/pay/transactions/jsapi", body);
+        String json = postRequest("/pay/transactions/jsapi", body);
 
         JSONObject jsonObject = JSONObject.parseObject(json);
         String prepay_id = jsonObject.getString("prepay_id");
         if (StringUtils.isEmpty(prepay_id))
             log.error("创建预付订单出错，微信返回的结果中没有prepay_id, 微信返回: {}", jsonObject);
-        else
-            log.info("创建预付订单成功，微信返回: {}", jsonObject);
+        else log.info("创建预付订单成功，微信返回: {}", jsonObject);
         return prepay_id;
     }
 
@@ -225,18 +216,12 @@ public class WechatPayService {
      * success (res) { },
      * fail (res) { }
      * })
-     *
-     * @param prepay_id
-     * @return
      */
     public PayResponse getMiniProgramResponse(String prepay_id, String orderId) {
         long timeStamp = System.currentTimeMillis() / 1000;
         String nonceStr = RandomStringUtils.randomAlphanumeric(20);
         String packageStr = "prepay_id=" + prepay_id;
-        String signText = appid + "\n"
-                + timeStamp + "\n"
-                + nonceStr + "\n"
-                + packageStr + "\n";
+        String signText = appid + "\n" + timeStamp + "\n" + nonceStr + "\n" + packageStr + "\n";
         String paySign = sign(signText);
 
         PayResponse payResponse = new PayResponse();
@@ -252,10 +237,6 @@ public class WechatPayService {
 
     /**
      * 查询订单: 根据商户订单号
-     * <p>
-     * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no
-     * /43138c3f00e947e7b10bfaa7bb854b35?mchid=1609202393
-     * <p>
      * {
      * "amount": {
      * "currency": "CNY",
@@ -279,26 +260,23 @@ public class WechatPayService {
      * "transaction_id": "4200001025202105128641360838"
      * }
      */
-    public String queryTransactionByOutTradeNo(String out_trade_no) {
-        String relativeUrl = "/v3/pay/transactions/out-trade-no/" + out_trade_no
-                + "?mchid=" + mchid;
-        return getRequest(relativeUrl);
+    public JSONObject queryTransactionByOutTradeNo(String out_trade_no) {
+        String relativeUrl = "/pay/transactions/out-trade-no/" + out_trade_no + "?mchid=" + mchid;
+        return JSON.parseObject(getRequest(relativeUrl));
     }
 
     /**
      * 查询订单: 根据微信订单号
-     * <p>
-     * https://api.mch.weixin.qq.com/v3/pay/transactions/id/1217752501201407033233368018
      */
-    public String queryTransactionByWechatTransactionId(String transactionId) {
-        String relativeUrl = "/v3/pay/transactions/id/" + transactionId + "?mchid=" + mchid;
-        return getRequest(relativeUrl);
+    public JSONObject queryTransactionByWechatTransactionId(String transactionId) {
+        String relativeUrl = "/pay/transactions/id/" + transactionId + "?mchid=" + mchid;
+        return JSON.parseObject(getRequest(relativeUrl));
     }
 
     /**
      * 创建native订单
      */
-    public String createNative() {
+    public JSONObject createNative() {
         // {
         //     "mchid": "1900006XXX",
         //     "out_trade_no": "native12177525012014070332333",
@@ -313,7 +291,8 @@ public class WechatPayService {
 
         JSONObject body = new JSONObject();
         body.put("mchid", mchid);
-        body.put("out_trade_no", getOrderId());
+        String outTradeNo = getOrderId();
+        body.put("out_trade_no", outTradeNo);
         body.put("appid", appid);
         body.put("description", "description-" + IdUtil.simpleUUID());
         body.put("notify_url", "https://weixin.qq.com/");
@@ -322,9 +301,14 @@ public class WechatPayService {
         amount.put("total", 1);
         body.put("amount", amount);
         log.info("创建微信支付native订单，参数为：{}", body.toJSONString());
-        String response = postRequest("/v3/pay/transactions/native", body.toJSONString());
-        log.info("微信返回创建native订单结果：{}", response);
-        return JSON.parseObject(response).getString("code_url");
+        String createNative = postRequest("/pay/transactions/native", body.toJSONString());
+        log.info("微信返回创建native订单结果：{}", createNative);
+        String codeUrl = JSON.parseObject(createNative).getString("code_url");
+
+        JSONObject response = new JSONObject();
+        response.put("codeUrl", codeUrl);
+        response.put("outTradeNo", outTradeNo);
+        return response;
     }
 
     /**
@@ -336,17 +320,16 @@ public class WechatPayService {
         // }
         JSONObject body = new JSONObject();
         body.put("mchid", mchid);
-        body.put("out_trade_no", outTradeNo);
-        postRequest("/transactions/out-trade-no/" + outTradeNo + "/close",
-                body.toJSONString());
+        postRequest("/transactions/out-trade-no/" + outTradeNo + "/close", body.toJSONString());
     }
 
     /**
      * 申请退款
      */
     public String refund(String outTradeNo) {
+        // 请求参数：
         //  {
-        //      "transaction_id": "1217752501201407033233368018",
+        //      "out_trade_no": "1217752501201407033233368018",
         //      "out_refund_no": "1217752501201407033233368018",
         //      "amount": {
         //            "refund": 1,
@@ -355,9 +338,8 @@ public class WechatPayService {
         //      },
         //  }
         JSONObject body = new JSONObject();
-        body.put("mchid", mchid);
         body.put("out_trade_no", outTradeNo);
-        body.put("out_refund_no", "out_refund_no-" + outTradeNo);
+        body.put("out_refund_no", "out_refund_no-" + outTradeNo + "-" + System.currentTimeMillis());
 
         JSONObject amount = new JSONObject();
         amount.put("refund", 1);
@@ -365,6 +347,82 @@ public class WechatPayService {
         amount.put("currency", "CNY");
         body.put("amount", amount);
 
+        /**
+         * 退款成功：
+         * {
+         *     "amount": {
+         *         "currency": "CNY",
+         *         "discount_refund": 0,
+         *         "from": [],
+         *         "payer_refund": 1,
+         *         "payer_total": 1,
+         *         "refund": 1,
+         *         "refund_fee": 0,
+         *         "settlement_refund": 1,
+         *         "settlement_total": 1,
+         *         "total": 1
+         *     },
+         *     "channel": "ORIGINAL",
+         *     "create_time": "2022-12-03T01:28:16+08:00",
+         *     "funds_account": "AVAILABLE",
+         *     "out_refund_no": "out_refund_no-a0y1iez18eniisl6gf6jhkod7-1670002095595",
+         *     "out_trade_no": "a0y1iez18eniisl6gf6jhkod7",
+         *     "promotion_detail": [],
+         *     "refund_id": "50302503872022120327963036197",
+         *     "status": "PROCESSING",
+         *     "transaction_id": "4200001686202212020316809316",
+         *     "user_received_account": "招商银行借记卡5778"
+         * }
+         *
+         * 反复调用，退款失败：
+         * {
+         *     "code": "INVALID_REQUEST",
+         *     "message": "订单已全额退款"
+         * }
+         */
+        log.info("发起微信退款，body = {}", body.toJSONString());
         return postRequest("/refund/domestic/refunds", body.toJSONString());
+    }
+
+    /**
+     * 查询单笔退款
+     */
+    public JSONObject queryRefund(String outRefundNo) {
+        /**
+         * {
+         *     "amount": {
+         *         "currency": "CNY",
+         *         "discount_refund": 0,
+         *         "from": [],
+         *         "payer_refund": 1,
+         *         "payer_total": 1,
+         *         "refund": 1,
+         *         "refund_fee": 0,
+         *         "settlement_refund": 1,
+         *         "settlement_total": 1,
+         *         "total": 1
+         *     },
+         *     "channel": "ORIGINAL",
+         *     "create_time": "2022-12-03T01:28:16+08:00",
+         *     "funds_account": "AVAILABLE",
+         *     "out_refund_no": "out_refund_no-a0y1iez18eniisl6gf6jhkod7-1670002095595",
+         *     "out_trade_no": "a0y1iez18eniisl6gf6jhkod7",
+         *     "promotion_detail": [],
+         *     "refund_id": "50302503872022120327963036197",
+         *     "status": "SUCCESS",
+         *     "success_time": "2022-12-03T01:28:24+08:00",
+         *     "transaction_id": "4200001686202212020316809316",
+         *     "user_received_account": "招商银行借记卡5778"
+         * }
+         */
+        return JSON.parseObject(getRequest("/refund/domestic/refunds/" + outRefundNo));
+    }
+
+    /**
+     * 申请交易账单
+     * https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_6.shtml
+     */
+    public JSONObject tradebill(String billDate) {
+        return JSON.parseObject(getRequest("/bill/tradebill?bill_date=" + billDate));
     }
 }
